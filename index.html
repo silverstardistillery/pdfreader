@@ -53,9 +53,9 @@
   .upload-icon svg{width:32px;height:32px;fill:white;}
   .upload-title{font-size:1.3rem;font-weight:600;margin-bottom:8px;}
   .upload-sub{color:var(--text2);font-size:0.9rem;margin-bottom:20px;}
-  .upload-btn{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:white;border:none;padding:12px 28px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;position:relative;z-index:2;}
+  .upload-btn{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:white;border:none;padding:12px 28px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;display:inline-block;}
   .upload-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,0.35);}
-  #fileInput{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+  #fileInput{display:none;}
 
   /* PROGRESS */
   .progress-bar-wrap{margin-top:16px;background:var(--surface2);border-radius:4px;height:4px;overflow:hidden;display:none;}
@@ -162,16 +162,19 @@
 
   <!-- UPLOAD -->
   <div class="upload-section fade-in">
+    <!-- File input OUTSIDE the upload zone for maximum browser/mobile compatibility -->
+    <label for="fileInput" style="display:none" id="fileLabel">Choose PDF</label>
+    <input type="file" id="fileInput" accept=".pdf,.PDF" style="display:none;"/>
     <div class="upload-zone" id="uploadZone">
       <div class="upload-icon">
         <svg viewBox="0 0 24 24"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M16 12l-4-4-4 4M12 8v8" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="upload-title">Upload Daily Sales PDF</div>
       <div class="upload-sub">Drag &amp; drop your PDF here, or click to browse</div>
-      <button class="upload-btn" id="chooseFileBtn" type="button">
+      <!-- Using label as button — most reliable method on all devices including mobile -->
+      <label for="fileInput" class="upload-btn" id="chooseFileBtn" style="cursor:pointer;">
         📂 Choose PDF File
-      </button>
-      <input type="file" id="fileInput" accept=".pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"/>
+      </label>
       <div class="progress-bar-wrap" id="progressWrap">
         <div class="progress-bar" id="progressBar"></div>
       </div>
@@ -390,30 +393,22 @@ function initFirebase() {
 // ============================================================
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
-const chooseFileBtn = document.getElementById('chooseFileBtn');
 
-// ---- Button click opens file picker ----
-chooseFileBtn.addEventListener('click', function(e) {
-  e.stopPropagation();
-  fileInput.value = ''; // reset so same file can be re-selected
-  fileInput.click();
-});
-
-// ---- Clicking anywhere on zone (not the button) also opens picker ----
-uploadZone.addEventListener('click', function(e) {
-  if(e.target === chooseFileBtn || e.target.closest('#chooseFileBtn')) return;
-  fileInput.value = '';
-  fileInput.click();
-});
-
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+// The label[for=fileInput] button already handles click natively on all devices.
+// We only need drag-and-drop events on the zone.
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', e => { e.stopPropagation(); uploadZone.classList.remove('drag-over'); });
 uploadZone.addEventListener('drop', e => {
   e.preventDefault();
+  e.stopPropagation();
   uploadZone.classList.remove('drag-over');
   const file = e.dataTransfer.files[0];
-  if(file && file.type === 'application/pdf') processFile(file);
-  else showToast('Please upload a valid PDF file', 'error');
+  if(file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
+    fileInput.value = '';
+    processFile(file);
+  } else {
+    showToast('Please upload a valid PDF file', 'error');
+  }
 });
 fileInput.addEventListener('change', e => {
   const file = e.target.files && e.target.files[0];
@@ -601,6 +596,20 @@ function normalizeName(name) {
   return name.replace(/[^\w\s\-().\/]/g,'').replace(/\s+/g,' ').trim();
 }
 
+// Safe Firestore document ID: date + truncated slug (max 100 chars total, well under 1500 byte limit)
+function makeDocId(date, product) {
+  // Slug: lowercase, only alphanumeric and underscores, max 80 chars
+  const slug = product.toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '')
+    .slice(0, 80);
+  // Simple numeric hash suffix to prevent collisions from truncation
+  let hash = 0;
+  for(let i = 0; i < product.length; i++) { hash = ((hash << 5) - hash + product.charCodeAt(i)) | 0; }
+  const hashStr = Math.abs(hash).toString(36).slice(0, 6);
+  return (date + '_' + slug + '_' + hashStr).slice(0, 500); // Firestore max is 1500 bytes, 500 chars is very safe
+}
+
 function formatDate(y, m, d) {
   return y.padStart(4,'0') + '-' + m.toString().padStart(2,'0') + '-' + d.toString().padStart(2,'0');
 }
@@ -610,38 +619,53 @@ function getTodayDate() {
 }
 
 // ============================================================
-// FIREBASE SAVE (SMART MERGE)
+// FIREBASE SAVE (CHUNKED BATCH — handles large PDFs)
+// Firestore batch limit = 500 ops. We use chunks of 200 (read+write pairs)
+// so we stay safely under the limit even with merge reads.
 // ============================================================
 async function saveToFirebase(records) {
-  const batch = db.batch();
+  const CHUNK_SIZE = 200; // safe chunk: 200 records × 2 ops (get+set/update) = 400 ops per batch
+  const total = records.length;
+  let saved = 0;
 
-  for(const rec of records) {
-    // Document ID = date_productname (normalized, no spaces)
-    const docId = rec.date + '_' + rec.product.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-    const ref = db.collection('sales').doc(docId);
-    const existing = await ref.get();
+  for(let chunkStart = 0; chunkStart < total; chunkStart += CHUNK_SIZE) {
+    const chunk = records.slice(chunkStart, chunkStart + CHUNK_SIZE);
+    const batch = db.batch();
 
-    if(existing.exists) {
-      // Accumulate if same day same product
-      const old = existing.data();
-      batch.update(ref, {
-        qty: (old.qty || 0) + rec.qty,
-        amount: (old.amount || 0) + rec.amount,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    } else {
-      batch.set(ref, {
-        date: rec.date,
-        product: rec.product,
-        qty: rec.qty,
-        amount: rec.amount,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+    for(const rec of chunk) {
+      // Safe document ID: uses truncated slug + hash — never exceeds 1500 bytes
+      const docId = makeDocId(rec.date, rec.product);
+      const ref = db.collection('sales').doc(docId);
+
+      let existing;
+      try { existing = await ref.get(); } catch(e) { existing = { exists: false }; }
+
+      if(existing.exists) {
+        const old = existing.data();
+        batch.update(ref, {
+          qty: (old.qty || 0) + rec.qty,
+          amount: (old.amount || 0) + rec.amount,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } else {
+        batch.set(ref, {
+          date: rec.date,
+          product: rec.product,
+          qty: rec.qty,
+          amount: rec.amount,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
     }
+
+    await batch.commit();
+    saved += chunk.length;
+    // Update progress during large uploads
+    const pct = 80 + Math.round((saved / total) * 18);
+    setProgress(pct, `Saving... ${saved}/${total} records`);
   }
 
-  await batch.commit();
   await loadAllData();
 }
 
