@@ -53,9 +53,9 @@
   .upload-icon svg{width:32px;height:32px;fill:white;}
   .upload-title{font-size:1.3rem;font-weight:600;margin-bottom:8px;}
   .upload-sub{color:var(--text2);font-size:0.9rem;margin-bottom:20px;}
-  .upload-btn{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:white;border:none;padding:12px 28px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;}
+  .upload-btn{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:white;border:none;padding:12px 28px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;position:relative;z-index:2;}
   .upload-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,0.35);}
-  #fileInput{display:none;}
+  #fileInput{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
 
   /* PROGRESS */
   .progress-bar-wrap{margin-top:16px;background:var(--surface2);border-radius:4px;height:4px;overflow:hidden;display:none;}
@@ -168,10 +168,10 @@
       </div>
       <div class="upload-title">Upload Daily Sales PDF</div>
       <div class="upload-sub">Drag &amp; drop your PDF here, or click to browse</div>
-      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-        Choose PDF File
+      <button class="upload-btn" id="chooseFileBtn" type="button">
+        📂 Choose PDF File
       </button>
-      <input type="file" id="fileInput" accept=".pdf"/>
+      <input type="file" id="fileInput" accept=".pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"/>
       <div class="progress-bar-wrap" id="progressWrap">
         <div class="progress-bar" id="progressBar"></div>
       </div>
@@ -358,13 +358,29 @@ function initFirebase() {
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
-    document.getElementById('statusDot').classList.add('connected');
-    document.getElementById('statusText').textContent = 'Firebase Connected';
-    loadAllData();
-    showToast('Firebase connected successfully', 'success');
+    // Test connection by doing a small read
+    db.collection('sales').limit(1).get()
+      .then(() => {
+        document.getElementById('statusDot').classList.add('connected');
+        document.getElementById('statusText').textContent = 'Firebase Connected';
+        showToast('Firebase connected ✅', 'success');
+        loadAllData();
+      })
+      .catch(err => {
+        db = null;
+        document.getElementById('statusDot').classList.remove('connected');
+        if(err.code === 'permission-denied') {
+          document.getElementById('statusText').textContent = 'Permission Denied';
+          showToast('🔒 Firestore permission denied! Go to Firebase Console → Firestore → Rules and set: allow read, write: if true;', 'error');
+        } else {
+          document.getElementById('statusText').textContent = 'Connection Error';
+          showToast('Firebase error: ' + err.message, 'error');
+        }
+        console.error('Firestore error:', err);
+      });
   } catch(e) {
-    document.getElementById('statusText').textContent = 'Connection Error';
-    showToast('Firebase connection failed: ' + e.message, 'error');
+    document.getElementById('statusText').textContent = 'Init Error';
+    showToast('Firebase init failed: ' + e.message, 'error');
     console.error(e);
   }
 }
@@ -374,6 +390,21 @@ function initFirebase() {
 // ============================================================
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
+const chooseFileBtn = document.getElementById('chooseFileBtn');
+
+// ---- Button click opens file picker ----
+chooseFileBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  fileInput.value = ''; // reset so same file can be re-selected
+  fileInput.click();
+});
+
+// ---- Clicking anywhere on zone (not the button) also opens picker ----
+uploadZone.addEventListener('click', function(e) {
+  if(e.target === chooseFileBtn || e.target.closest('#chooseFileBtn')) return;
+  fileInput.value = '';
+  fileInput.click();
+});
 
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
@@ -385,14 +416,19 @@ uploadZone.addEventListener('drop', e => {
   else showToast('Please upload a valid PDF file', 'error');
 });
 fileInput.addEventListener('change', e => {
-  if(e.target.files[0]) processFile(e.target.files[0]);
+  const file = e.target.files && e.target.files[0];
+  if(file) processFile(file);
 });
 
 // ============================================================
 // PDF PROCESSING
 // ============================================================
 async function processFile(file) {
-  if(!db){ showToast('Firebase not connected', 'error'); return; }
+  if(!db){
+    showToast('⚠️ Firebase not connected. Check your config or Firestore rules.', 'error');
+    console.error('Firebase db is null. Ensure Firestore is enabled in the Firebase console and rules allow read/write.');
+    return;
+  }
 
   setProgress(5, 'Reading PDF...');
   showToast('Processing: ' + file.name, 'success');
