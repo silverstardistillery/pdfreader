@@ -1,921 +1,1608 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Sales Report Analyzer</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --border: #2a2a38;
-    --accent: #6c63ff;
-    --accent2: #ff6584;
-    --accent3: #43e97b;
-    --text: #e8e8f0;
-    --text2: #8888aa;
-    --text3: #5555770;
-    --radius: 14px;
-    --shadow: 0 8px 32px rgba(108,99,255,0.12);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-  ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:var(--surface);} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Whisky Sales Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6TowdmRPkpYRWBXLew70zeekyOjW0o5c",
+      authDomain: "pdfreader-55af4.firebaseapp.com",
+      projectId: "pdfreader-55af4",
+      storageBucket: "pdfreader-55af4.firebasestorage.app",
+      messagingSenderId: "968950783380",
+      appId: "1:968950783380:web:927e6a6c93d9151d3c8381"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window._fbDb = db;
+    window._fbCol = collection;
+    window._fbAdd = addDoc;
+    window._fbGet = getDocs;
+    window._fbQuery = query;
+    window._fbOrder = orderBy;
+    window.fbReady = true;
+    window.dispatchEvent(new Event('fbready'));
+  </script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f2f6;
+      --white: #ffffff;
+      --border: #d4dae6;
+      --border2: #e6eaf2;
+      --blue: #1a4fa0;
+      --blue-light: #eaf0fb;
+      --text: #1a2235;
+      --text2: #4a5568;
+      --text3: #8a9bb0;
+      --gold: #b8860b;
+      --gold-bg: #fff8e6;
+      --comp-bg: #f0f5ff;
+      --green: #276749;
+      --red: #c53030;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
 
-  /* HEADER */
-  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
-  .logo{display:flex;align-items:center;gap:12px;}
-  .logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;}
-  .logo-icon svg{width:20px;height:20px;fill:white;}
-  .logo-text{font-size:1.2rem;font-weight:700;letter-spacing:-0.3px;}
-  .logo-text span{color:var(--accent);}
-  .status-badge{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;}
-  .status-dot{width:7px;height:7px;border-radius:50%;background:#666;}
-  .status-dot.connected{background:var(--accent3);box-shadow:0 0 8px var(--accent3);}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* LAYOUT */
-  .container{max-width:1400px;margin:0 auto;padding:32px;}
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+    }
 
-  /* UPLOAD ZONE */
-  .upload-section{margin-bottom:32px;}
-  .upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:48px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--surface);position:relative;overflow:hidden;}
-  .upload-zone::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(108,99,255,0.04),rgba(255,101,132,0.04));opacity:0;transition:opacity 0.3s;}
-  .upload-zone:hover::before,.upload-zone.drag-over::before{opacity:1;}
-  .upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
-  .upload-zone.drag-over{border-color:var(--accent3);}
-  .upload-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
-  .upload-icon svg{width:32px;height:32px;fill:white;}
-  .upload-title{font-size:1.3rem;font-weight:600;margin-bottom:8px;}
-  .upload-sub{color:var(--text2);font-size:0.9rem;margin-bottom:20px;}
-  .upload-btn{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:white;border:none;padding:12px 28px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;display:inline-block;}
-  .upload-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,0.35);}
-  #fileInput{display:none;}
+    /* TOP BAR */
+    .top-bar {
+      background: var(--blue);
+      color: white;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-  /* PROGRESS */
-  .progress-bar-wrap{margin-top:16px;background:var(--surface2);border-radius:4px;height:4px;overflow:hidden;display:none;}
-  .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:4px;transition:width 0.4s;width:0%;}
-  .progress-text{margin-top:8px;font-size:0.8rem;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  /* STATS */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
-  .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-  .stat-card:nth-child(1)::after{background:linear-gradient(90deg,var(--accent),#8b5cf6);}
-  .stat-card:nth-child(2)::after{background:linear-gradient(90deg,var(--accent3),#06d6a0);}
-  .stat-card:nth-child(3)::after{background:linear-gradient(90deg,var(--accent2),#ff8c69);}
-  .stat-card:nth-child(4)::after{background:linear-gradient(90deg,#f9c74f,#f4a261);}
-  .stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
-  .stat-label{font-size:0.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-  .stat-value{font-size:2rem;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;}
-  .stat-sub{font-size:0.8rem;color:var(--text2);margin-top:4px;}
+    .top-logo {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
 
-  /* FILTERS */
-  .filters-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;}
-  .filter-group{display:flex;flex-direction:column;gap:6px;}
-  .filter-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--text2);}
-  .filter-input,.filter-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.88rem;transition:border-color 0.2s;min-width:160px;}
-  .filter-input:focus,.filter-select:focus{outline:none;border-color:var(--accent);}
-  .filter-select option{background:var(--surface2);}
-  .filter-actions{margin-left:auto;display:flex;gap:10px;}
-  .btn-clear{background:transparent;border:1px solid var(--border);color:var(--text2);padding:9px 18px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
-  .btn-clear:hover{border-color:var(--accent2);color:var(--accent2);}
-  .btn-export{background:linear-gradient(135deg,var(--accent3),#06d6a0);color:#0a0a0f;border:none;padding:9px 18px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
-  .btn-export:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(67,233,123,0.3);}
+    .top-tag {
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
 
-  /* TABS */
-  .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px;}
-  .tab-btn{flex:1;padding:10px;background:transparent;border:none;color:var(--text2);font-family:'Space Grotesk',sans-serif;font-size:0.88rem;font-weight:500;cursor:pointer;border-radius:7px;transition:all 0.2s;text-align:center;}
-  .tab-btn.active{background:var(--accent);color:white;box-shadow:0 4px 14px rgba(108,99,255,0.35);}
-  .tab-btn:hover:not(.active){color:var(--text);background:var(--surface2);}
+    .top-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
 
-  /* TABLE */
-  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-  .table-header-bar{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
-  .table-title{font-size:1rem;font-weight:600;}
-  .table-count{font-size:0.8rem;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:20px;}
-  .data-table{width:100%;border-collapse:collapse;}
-  .data-table th{background:var(--surface2);padding:14px 20px;text-align:left;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--text2);border-bottom:1px solid var(--border);}
-  .data-table td{padding:14px 20px;font-size:0.88rem;border-bottom:1px solid rgba(42,42,56,0.5);transition:background 0.15s;}
-  .data-table tr:hover td{background:rgba(108,99,255,0.05);}
-  .data-table tr:last-child td{border-bottom:none;}
-  .product-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(108,99,255,0.12);border:1px solid rgba(108,99,255,0.2);color:#a5a0ff;padding:4px 10px;border-radius:20px;font-size:0.8rem;font-weight:500;}
-  .amount-cell{font-family:'JetBrains Mono',monospace;color:var(--accent3);}
-  .qty-cell{font-family:'JetBrains Mono',monospace;color:#f9c74f;}
-  .date-cell{font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--text2);}
-  .empty-state{text-align:center;padding:64px 24px;color:var(--text2);}
-  .empty-icon{font-size:3rem;margin-bottom:16px;opacity:0.4;}
-  .empty-text{font-size:1rem;font-weight:500;margin-bottom:8px;}
-  .empty-sub{font-size:0.85rem;opacity:0.7;}
+    .hbtn {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-  /* CHARTS */
-  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
-  .chart-title{font-size:1rem;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
-  .chart-dot{width:10px;height:10px;border-radius:50%;}
-  canvas{max-height:300px;}
+    .hbtn:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
 
-  /* TOAST */
-  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:0.88rem;display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all 0.35s;z-index:999;max-width:340px;}
-  .toast.show{transform:translateY(0);opacity:1;}
-  .toast.success{border-color:var(--accent3);} .toast.error{border-color:var(--accent2);}
-  .toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-  .toast.success .toast-dot{background:var(--accent3);}
-  .toast.error .toast-dot{background:var(--accent2);}
+    .hbtn.gold {
+      background: #f5a623;
+      border-color: #f5a623;
+      color: #111;
+    }
 
-  /* RESPONSIVE */
-  @media(max-width:768px){
-    .container{padding:16px;}
-    .charts-grid{grid-template-columns:1fr;}
-    .filters-bar{flex-direction:column;align-items:stretch;}
-    .filter-actions{margin-left:0;}
-    .stats-grid{grid-template-columns:1fr 1fr;}
-  }
-  .tab-content{display:none;} .tab-content.active{display:block;}
-  .loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  .fade-in{animation:fadeIn 0.4s ease-out;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-</style>
+    .hbtn.gold:hover {
+      background: #e0961a;
+    }
+
+    .hbtn.danger {
+      background: #c0392b;
+      border-color: #c0392b;
+    }
+
+    .pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* PAGE */
+    .page {
+      padding: 20px 24px;
+    }
+
+    /* UPLOAD */
+    #fileInput {
+      display: none;
+    }
+
+    .upload-zone {
+      background: var(--white);
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      margin-bottom: 18px;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.over {
+      border-color: var(--blue);
+      background: var(--blue-light);
+    }
+
+    .up-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .up-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .up-sub {
+      font-size: 0.78rem;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+
+    .up-btn {
+      display: inline-block;
+      background: var(--blue);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .up-btn:hover {
+      background: #163d80;
+    }
+
+    .prog-wrap {
+      display: none;
+      margin-top: 14px;
+    }
+
+    .prog-track {
+      height: 4px;
+      background: var(--border2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), #4a90e2);
+      width: 0%;
+      transition: width 0.4s;
+    }
+
+    .prog-lbl {
+      margin-top: 6px;
+      font-size: 0.72rem;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .sc {
+      background: var(--white);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .sc.g {
+      border-left: 3px solid var(--gold);
+    }
+
+    .sc.b {
+      border-left: 3px solid var(--blue);
+    }
+
+    .sc.gr {
+      border-left: 3px solid var(--green);
+    }
+
+    .sc-lbl {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+
+    .sc-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.55rem;
+      font-weight: 600;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .sc-sub {
+      font-size: 0.68rem;
+      color: var(--text3);
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      background: var(--white);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .tg {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .tg-lbl {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text3);
+      font-weight: 600;
+    }
+
+    .ti,
+    .ts {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 140px;
+    }
+
+    .ti:focus,
+    .ts:focus {
+      border-color: var(--blue);
+    }
+
+    .ta {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+    }
+
+    .tbtn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text2);
+      transition: all 0.2s;
+    }
+
+    .tbtn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .tbtn.csv {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .tbtn.csv:hover {
+      background: #1e5236;
+    }
+
+    .tbtn.pdf {
+      background: var(--red);
+      color: white;
+      border-color: var(--red);
+    }
+
+    .tbtn.pdf:hover {
+      background: #a02020;
+    }
+
+    /* LEGEND */
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--text2);
+    }
+
+    .ld {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    /* TABLE CARD */
+    .tc {
+      background: var(--white);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .tc-hdr {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to right, #f5f8ff, white);
+    }
+
+    .tc-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .tc-meta {
+      font-size: 0.7rem;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .tbl-scroll {
+      overflow: auto;
+      max-height: 58vh;
+    }
+
+    /* PIVOT TABLE */
+    .ptbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+      min-width: max-content;
+    }
+
+    /* Sticky col-header row */
+    .ptbl thead tr:first-child th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--blue);
+      color: white;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 7px 10px;
+      text-align: center;
+      white-space: nowrap;
+      border-right: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .ptbl thead tr:first-child th.dh {
+      text-align: left;
+      min-width: 85px;
+      position: sticky;
+      left: 0;
+      z-index: 11;
+      background: #13397a;
+    }
+
+    .ptbl thead tr:first-child th.mbh {
+      background: #8a6200;
+    }
+
+    .ptbl thead tr:first-child th.toth {
+      background: #0e2b5e;
+    }
+
+    /* Data rows */
+    .ptbl tbody tr:hover td {
+      background: #f0f5ff !important;
+    }
+
+    .ptbl tbody tr:hover .dc {
+      background: #e5ecf8 !important;
+    }
+
+    .ptbl td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border2);
+      border-right: 1px solid var(--border2);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dc {
+      position: sticky;
+      left: 0;
+      background: var(--white) !important;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.76rem;
+      color: var(--text);
+      z-index: 2;
+      padding: 8px 12px;
+      border-right: 2px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .hv {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .zv {
+      color: #cfd5df;
+    }
+
+    .mbc {
+      background: var(--gold-bg) !important;
+    }
+
+    .mbc.hv {
+      color: #7a4d00;
+    }
+
+    .compc {
+      background: transparent;
+    }
+
+    .totc {
+      font-weight: 700;
+      color: var(--blue);
+      background: var(--blue-light) !important;
+      border-left: 2px solid var(--blue);
+    }
+
+    /* Totals row */
+    .trow td {
+      background: #1a2f60 !important;
+      color: white !important;
+      font-weight: 700;
+      border-top: 2px solid var(--blue);
+    }
+
+    .trow .dc {
+      background: #0f2050 !important;
+      color: white !important;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+    }
+
+    .trow .mbc {
+      background: #7a4d00 !important;
+      color: #ffe0a0 !important;
+    }
+
+    .trow .totc {
+      background: #0e2040 !important;
+      color: #a0c0ff !important;
+    }
+
+    /* Sep row */
+    .seprow td {
+      background: #f5f8ff;
+      font-size: 0.62rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 4px 12px;
+      border-bottom: 1px solid var(--border2);
+      font-weight: 600;
+    }
+
+    .seprow .dc {
+      background: #f5f8ff !important;
+      color: var(--text3);
+    }
+
+    .seprow-my .dc {
+      background: #fff8e6 !important;
+      color: #b8860b;
+    }
+
+    .seprow-my td {
+      background: #fff8e6;
+      color: #b8860b;
+    }
+
+    /* Empty */
+    .empty {
+      text-align: center;
+      padding: 64px 24px;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    .empty-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 5px;
+    }
+
+    .empty-sub {
+      font-size: 0.78rem;
+      color: var(--text3);
+    }
+
+    /* LOG */
+    .log {
+      background: #0c1220;
+      border: 1px solid #1e2d42;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      display: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: #6aaa7a;
+      max-height: 90px;
+      overflow-y: auto;
+    }
+
+    .log.vis {
+      display: block;
+    }
+
+    .lw {
+      color: #f5c842;
+    }
+
+    .le {
+      color: #f56e6e;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1a2235;
+      color: white;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(60px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 9999;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      max-width: 320px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.ok { background: #276749; }
+    .toast.err { background: #c53030; }
+
+    /* FB STATUS BADGE */
+    .fb-badge {
+      font-size: 0.68rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      transition: all 0.4s;
+    }
+    .fb-badge.ok { background: #276749; color: #a3f0c0; }
+    .fb-badge.err { background: #7a1a1a; color: #fca5a5; }
+    .fb-badge.saving { background: #1a4580; color: #93c5fd; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* COMPARE PANEL */
+    .cmp-panel {
+      background: var(--white);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .cmp-hdr {
+      background: linear-gradient(135deg, #1a4fa0, #2c6ee0);
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cmp-hdr h3 { font-size: 0.88rem; font-weight: 600; }
+    .cmp-body { padding: 14px 16px; }
+    .cmp-select-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .cmp-select-row .tg-lbl { font-size:0.62rem; text-transform:uppercase; letter-spacing:1px; color:var(--text3); font-weight:600; margin-bottom:3px; }
+    .cmp-select-row select { min-width:220px; }
+    .cmp-btn {
+      padding: 7px 18px;
+      background: #1a4fa0;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .cmp-btn:hover { background: #163d80; }
+    .cmp-btn.clear { background: #c53030; }
+    .cmp-btn.clear:hover { background: #a02020; }
+    .cmp-chart-wrap {
+      display: none;
+      overflow-x: auto;
+    }
+    .cmp-chart-wrap.vis { display: block; }
+    .bar-chart {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      padding: 16px 0 8px;
+      min-height: 220px;
+      border-bottom: 2px solid var(--border);
+    }
+    .bar-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 80px;
+    }
+    .bar-group-label {
+      font-size: 0.6rem;
+      color: var(--text3);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+    .bars-row {
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+    }
+    .bar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .bar {
+      width: 28px;
+      border-radius: 4px 4px 0 0;
+      transition: all 0.5s cubic-bezier(.4,0,.2,1);
+      min-height: 4px;
+      position: relative;
+      cursor: pointer;
+    }
+    .bar:hover { filter: brightness(1.15); }
+    .bar-val {
+      font-size: 0.6rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text2);
+      font-weight: 600;
+    }
+    .cmp-legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .cmp-leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--text2);
+    }
+    .cmp-leg-dot {
+      width: 12px; height: 12px;
+      border-radius: 3px;
+    }
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-top: 14px;
+    }
+    .cmp-table th {
+      background: #1a4fa0;
+      color: white;
+      padding: 7px 10px;
+      text-align: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.5px;
+    }
+    .cmp-table th:first-child { text-align: left; }
+    .cmp-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border2);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .cmp-table td:first-child { text-align: left; font-family: 'Inter', sans-serif; font-weight: 500; }
+    .cmp-table tbody tr:hover td { background: #f0f5ff; }
+    .cmp-table .winner { color: #276749; font-weight: 700; }
+    .cmp-table .loser { color: #c53030; }
+    .fb-history { margin-top: 14px; }
+    .fb-history h4 { font-size: 0.78rem; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+    .fb-rec-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+    .fb-rec-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.72rem;
+    }
+    .fb-rec-item .fb-ri-name { font-weight: 600; color: var(--text); }
+    .fb-rec-item .fb-ri-meta { color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+  </style>
 </head>
+
 <body>
 
-<div class="header">
-  <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M9 12h6M9 16h6M9 8h6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+  <div class="top-bar">
+    <div class="top-left">
+      <div class="top-logo">🥃 Whisky Sales Dashboard</div>
+      <div class="top-tag">Sale Quantity Only</div>
     </div>
-    <div class="logo-text">Sales<span>PDF</span> Analyzer</div>
-  </div>
-  <div class="status-badge">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Connecting...</span>
-  </div>
-</div>
-
-<div class="container">
-
-  <!-- UPLOAD -->
-  <div class="upload-section fade-in">
-    <!-- File input OUTSIDE the upload zone for maximum browser/mobile compatibility -->
-    <label for="fileInput" style="display:none" id="fileLabel">Choose PDF</label>
-    <input type="file" id="fileInput" accept=".pdf,.PDF" style="display:none;"/>
-    <div class="upload-zone" id="uploadZone">
-      <div class="upload-icon">
-        <svg viewBox="0 0 24 24"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M16 12l-4-4-4 4M12 8v8" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="upload-title">Upload Daily Sales PDF</div>
-      <div class="upload-sub">Drag &amp; drop your PDF here, or click to browse</div>
-      <!-- Using label as button — most reliable method on all devices including mobile -->
-      <label for="fileInput" class="upload-btn" id="chooseFileBtn" style="cursor:pointer;">
-        📂 Choose PDF File
-      </label>
-      <div class="progress-bar-wrap" id="progressWrap">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-      <div class="progress-text" id="progressText"></div>
+    <div class="top-right">
+      <div class="pill" id="hpill">0 records</div>
+      <span class="fb-badge" id="fbBadge">🔥 Firebase</span>
+      <button class="hbtn" onclick="loadFromFirebase()">☁ Load Cloud</button>
+      <button class="hbtn" onclick="exportCSV()">⬇ CSV</button>
+      <button class="hbtn gold" onclick="exportPDF()">📄 Export PDF</button>
+      <button class="hbtn danger" onclick="clearAll()">🗑 Clear</button>
     </div>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-grid fade-in" id="statsGrid">
-    <div class="stat-card">
-      <div class="stat-label">Total Revenue</div>
-      <div class="stat-value" id="statRevenue">0</div>
-      <div class="stat-sub">All-time from uploads</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Quantity</div>
-      <div class="stat-value" id="statQty">0</div>
-      <div class="stat-sub">Units sold total</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Products</div>
-      <div class="stat-value" id="statProducts">0</div>
-      <div class="stat-sub">Unique products tracked</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Days Tracked</div>
-      <div class="stat-value" id="statDays">0</div>
-      <div class="stat-sub">Days with sales data</div>
-    </div>
-  </div>
+  <div class="page">
 
-  <!-- FILTERS -->
-  <div class="filters-bar fade-in">
-    <div class="filter-group">
-      <div class="filter-label">Filter by Date</div>
-      <input type="date" class="filter-input" id="filterDate" onchange="applyFilters()"/>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Filter by Product</div>
-      <select class="filter-select" id="filterProduct" onchange="applyFilters()">
-        <option value="">All Products</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Search</div>
-      <input type="text" class="filter-input" id="searchInput" placeholder="Search product name..." oninput="applyFilters()"/>
-    </div>
-    <div class="filter-actions">
-      <button class="btn-clear" onclick="clearFilters()">Clear Filters</button>
-      <button class="btn-export" onclick="exportCSV()">Export CSV</button>
-    </div>
-  </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('table',this)">Table View</button>
-    <button class="tab-btn" onclick="switchTab('charts',this)">Charts</button>
-    <button class="tab-btn" onclick="switchTab('products',this)">Product Summary</button>
-  </div>
-
-  <!-- TABLE TAB -->
-  <div class="tab-content active" id="tab-table">
-    <div class="table-wrap fade-in">
-      <div class="table-header-bar">
-        <div class="table-title">Sales Records</div>
-        <div class="table-count" id="tableCount">0 records</div>
-      </div>
-      <div style="overflow-x:auto;">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr><td colspan="4">
-              <div class="empty-state">
-                <div class="empty-icon">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="rgba(108,99,255,0.08)"/><path d="M20 16h24a4 4 0 014 4v24a4 4 0 01-4 4H20a4 4 0 01-4-4V20a4 4 0 014-4z" stroke="#6c63ff" stroke-width="2" opacity="0.5"/><path d="M24 26h16M24 32h16M24 38h10" stroke="#6c63ff" stroke-width="2" stroke-linecap="round" opacity="0.5"/></svg>
-                </div>
-                <div class="empty-text">No sales data yet</div>
-                <div class="empty-sub">Upload a PDF to start analyzing</div>
-              </div>
-            </td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- CHARTS TAB -->
-  <div class="tab-content" id="tab-charts">
-    <div class="charts-grid">
-      <div class="chart-card fade-in">
-        <div class="chart-title">
-          <div class="chart-dot" style="background:var(--accent)"></div>
-          Daily Revenue
+    <input type="file" id="fileInput" accept=".pdf,.PDF" />
+    <div class="upload-zone" id="upZone">
+      <div class="up-icon">📂</div>
+      <div class="up-title">Upload Daily Sales PDF</div>
+      <div class="up-sub">Only <strong>Sale Quantity</strong> of Whisky items is extracted — Stock &amp; Balance are
+        ignored</div>
+      <label for="fileInput" class="up-btn">Choose PDF File</label>
+      <div class="prog-wrap" id="pw">
+        <div class="prog-track">
+          <div class="prog-fill" id="pf"></div>
         </div>
-        <canvas id="chartDaily"></canvas>
-      </div>
-      <div class="chart-card fade-in">
-        <div class="chart-title">
-          <div class="chart-dot" style="background:var(--accent3)"></div>
-          Product Revenue Share
-        </div>
-        <canvas id="chartProduct"></canvas>
-      </div>
-      <div class="chart-card fade-in" style="grid-column:1/-1;">
-        <div class="chart-title">
-          <div class="chart-dot" style="background:var(--accent2)"></div>
-          Daily Quantity Sold
-        </div>
-        <canvas id="chartQty"></canvas>
+        <div class="prog-lbl" id="pl"></div>
       </div>
     </div>
-  </div>
 
-  <!-- PRODUCTS TAB -->
-  <div class="tab-content" id="tab-products">
-    <div class="table-wrap fade-in">
-      <div class="table-header-bar">
-        <div class="table-title">Product Summary</div>
-        <div class="table-count" id="productCount">0 products</div>
+    <div class="log" id="logEl"></div>
+
+    <div class="stats">
+      <div class="sc g">
+        <div class="sc-lbl">Total Sale Qty</div>
+        <div class="sc-val" id="sTot">0</div>
+        <div class="sc-sub">All whisky products</div>
       </div>
-      <div style="overflow-x:auto;">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Total Quantity</th>
-              <th>Total Revenue</th>
-              <th>Days Sold</th>
-              <th>Avg Daily Qty</th>
-            </tr>
-          </thead>
-          <tbody id="productTableBody">
-            <tr><td colspan="5">
-              <div class="empty-state">
-                <div class="empty-text">No product data yet</div>
-                <div class="empty-sub">Upload a PDF to see product summaries</div>
-              </div>
-            </td></tr>
-          </tbody>
-        </table>
+      <div class="sc g">
+        <div class="sc-lbl">My Brands Qty</div>
+        <div class="sc-val" id="sMy">0</div>
+        <div class="sc-sub">John Martin &amp; Silver</div>
+      </div>
+      <div class="sc b">
+        <div class="sc-lbl">Competitor Qty</div>
+        <div class="sc-val" id="sCmp">0</div>
+        <div class="sc-sub">Other brands</div>
+      </div>
+      <div class="sc">
+        <div class="sc-lbl">Products</div>
+        <div class="sc-val" id="sPrd">0</div>
+        <div class="sc-sub">Unique items</div>
+      </div>
+      <div class="sc gr">
+        <div class="sc-lbl">Dates</div>
+        <div class="sc-val" id="sDy">0</div>
+        <div class="sc-sub">Days tracked</div>
       </div>
     </div>
+
+    <div class="toolbar">
+      <div class="tg">
+        <div class="tg-lbl">Filter Date</div><select class="ts" id="fDate" onchange="applyF()">
+          <option value="">All Dates</option>
+        </select>
+      </div>
+      <div class="tg">
+        <div class="tg-lbl">Brand</div>
+        <select class="ts" id="fBrand" onchange="applyF()">
+          <option value="">All Brands</option>
+          <option value="my">My Brands Only</option>
+          <option value="comp">Competitors Only</option>
+        </select>
+      </div>
+      <div class="tg">
+        <div class="tg-lbl">Search</div><input class="ti" id="fSearch" placeholder="Product name..."
+          oninput="applyF()" />
+      </div>
+      <div class="ta">
+        <button class="tbtn" onclick="resetF()">✕ Reset</button>
+        <button class="tbtn csv" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="tbtn pdf" onclick="exportPDF()">📄 Export PDF</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="li">
+        <div class="ld" style="background:#b8860b;"></div>★ My Brands — John Martin 180ml / 750ml PET / 2L / Secret Malt
+        | Silver Deluxe / Special Reserve
+      </div>
+      <div class="li">
+        <div class="ld" style="background:#2c5282;"></div>Competitor Brands
+      </div>
+    </div>
+
+    <div class="tc">
+      <div class="tc-hdr">
+        <div class="tc-title" id="tTitle">Date-wise Sale Quantity — All Products</div>
+        <div class="tc-meta" id="tMeta">—</div>
+      </div>
+      <div class="tbl-scroll" id="tScroll">
+        <div class="empty">
+          <div class="empty-icon">🥃</div>
+          <div class="empty-title">No whisky data yet</div>
+          <div class="empty-sub">Upload a daily sales PDF to see the date × product sale quantity table</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARE PANEL -->
+    <div class="cmp-panel" id="cmpPanel">
+      <div class="cmp-hdr">
+        <h3>📊 Product Comparison</h3>
+        <span style="font-size:0.72rem;opacity:0.8">Select products to compare their sale quantities</span>
+      </div>
+      <div class="cmp-body">
+        <div class="cmp-select-row">
+          <div class="tg">
+            <div class="tg-lbl">Product A</div>
+            <select class="ts" id="cmpA" style="min-width:220px"><option value="">-- Select Product --</option></select>
+          </div>
+          <div class="tg">
+            <div class="tg-lbl">Product B</div>
+            <select class="ts" id="cmpB" style="min-width:220px"><option value="">-- Select Product --</option></select>
+          </div>
+          <div class="tg">
+            <div class="tg-lbl">Product C (optional)</div>
+            <select class="ts" id="cmpC" style="min-width:220px"><option value="">-- None --</option></select>
+          </div>
+          <button class="cmp-btn" onclick="runCompare()">⚖ Compare</button>
+          <button class="cmp-btn clear" onclick="clearCompare()">✕ Clear</button>
+        </div>
+        <div class="cmp-chart-wrap" id="cmpChartWrap">
+          <div class="bar-chart" id="cmpBarChart"></div>
+          <div class="cmp-legend" id="cmpLegend"></div>
+          <table class="cmp-table" id="cmpTable"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FIREBASE HISTORY -->
+    <div class="cmp-panel" id="fbHistPanel" style="margin-top:12px;display:none">
+      <div class="cmp-hdr"><h3>☁ Firebase Cloud Records</h3></div>
+      <div class="cmp-body">
+        <div class="fb-rec-list" id="fbRecList"></div>
+      </div>
+    </div>
+
   </div>
 
-</div>
+  <div class="toast" id="toast">
+    <span id="tIcon">✓</span>
+    <span id="tMsg"></span>
+  </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <div class="toast-dot"></div>
-  <span id="toastMsg"></span>
-</div>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-<script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    // ─── MY BRAND DEFINITIONS ───────────────────────────────────
+    const MY_BRAND_KEYS = [
+      'john martin premium whisky 180',
+      'john martin premium whisky 750',
+      'john martin premium whisky 2',
+      'john martin secret malt',
+      'silvers deluxe whisky',
+      'silver deluxe whisky',
+      'silvers special reserve',
+      'silver special reserve',
+    ];
+    const isMyBrand = n => MY_BRAND_KEYS.some(k => n.toLowerCase().includes(k));
+    const isWhisky = n => /whis[kk]e?y/i.test(n);
 
-// ============================================================
-// FIREBASE CONFIG - HARDCODED
-// ============================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyB6TowdmRPkpYRWBXLew70zeekyOjW0o5c",
-  authDomain: "pdfreader-55af4.firebaseapp.com",
-  projectId: "pdfreader-55af4",
-  storageBucket: "pdfreader-55af4.firebasestorage.app",
-  messagingSenderId: "968950783380",
-  appId: "1:968950783380:web:927e6a6c93d9151d3c8381"
-};
+    const SKIP = ['total', 'grand total', 'sub total', 'item name', 'item group', 'product',
+      's.no', 'sr.no', 'srno', 'serial no', 'opening', 'closing', 'in stock',
+      'stock qty', 'quantity in stock', 'balance', 'opening stock',
+      'closing stock', 'current stock', 'bal qty', 'qty in stock', 'balance qty'];
+    const isSkip = n => { const l = n.toLowerCase().trim(); return SKIP.some(k => l === k || l.startsWith(k + ' ') || l.startsWith(k + ':')); };
 
-let db = null;
-let allRecords = [];
-let filteredRecords = [];
-let chartDaily = null, chartProduct = null, chartQty = null;
+    // ─── STATE ──────────────────────────────────────────────────
+    let allRec = [];   // {date, product, saleQty, isMyBrand}
+    let filtRec = [];
 
-// ============================================================
-// INIT FIREBASE
-// ============================================================
-function initFirebase() {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    // Test connection by doing a small read
-    db.collection('sales').limit(1).get()
-      .then(() => {
-        document.getElementById('statusDot').classList.add('connected');
-        document.getElementById('statusText').textContent = 'Firebase Connected';
-        showToast('Firebase connected ✅', 'success');
-        loadAllData();
-      })
-      .catch(err => {
-        db = null;
-        document.getElementById('statusDot').classList.remove('connected');
-        if(err.code === 'permission-denied') {
-          document.getElementById('statusText').textContent = 'Permission Denied';
-          showToast('🔒 Firestore permission denied! Go to Firebase Console → Firestore → Rules and set: allow read, write: if true;', 'error');
-        } else {
-          document.getElementById('statusText').textContent = 'Connection Error';
-          showToast('Firebase error: ' + err.message, 'error');
-        }
-        console.error('Firestore error:', err);
-      });
-  } catch(e) {
-    document.getElementById('statusText').textContent = 'Init Error';
-    showToast('Firebase init failed: ' + e.message, 'error');
-    console.error(e);
-  }
-}
+    // ─── UPLOAD WIRING ──────────────────────────────────────────
+    const upZone = document.getElementById('upZone');
+    const fileInput = document.getElementById('fileInput');
 
-// ============================================================
-// UPLOAD ZONE EVENTS
-// ============================================================
-const uploadZone = document.getElementById('uploadZone');
-const fileInput = document.getElementById('fileInput');
-
-// The label[for=fileInput] button already handles click natively on all devices.
-// We only need drag-and-drop events on the zone.
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.add('drag-over'); });
-uploadZone.addEventListener('dragleave', e => { e.stopPropagation(); uploadZone.classList.remove('drag-over'); });
-uploadZone.addEventListener('drop', e => {
-  e.preventDefault();
-  e.stopPropagation();
-  uploadZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if(file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
-    fileInput.value = '';
-    processFile(file);
-  } else {
-    showToast('Please upload a valid PDF file', 'error');
-  }
-});
-fileInput.addEventListener('change', e => {
-  const file = e.target.files && e.target.files[0];
-  if(file) processFile(file);
-});
-
-// ============================================================
-// PDF PROCESSING
-// ============================================================
-async function processFile(file) {
-  if(!db){
-    showToast('⚠️ Firebase not connected. Check your config or Firestore rules.', 'error');
-    console.error('Firebase db is null. Ensure Firestore is enabled in the Firebase console and rules allow read/write.');
-    return;
-  }
-
-  setProgress(5, 'Reading PDF...');
-  showToast('Processing: ' + file.name, 'success');
-
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    setProgress(20, 'Parsing PDF pages...');
-
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-
-    for(let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      const pageText = content.items.map(item => item.str).join(' ');
-      fullText += pageText + '\n';
-      setProgress(20 + Math.round((i/pdf.numPages)*40), 'Reading page ' + i + '/' + pdf.numPages);
-    }
-
-    setProgress(65, 'Extracting sales data...');
-    const records = extractRecords(fullText, file.name);
-
-    if(records.length === 0) {
-      setProgress(0, '');
-      showToast('No sales data found in PDF. Check format.', 'error');
-      return;
-    }
-
-    setProgress(80, 'Saving to Firebase...');
-    await saveToFirebase(records);
-    setProgress(100, 'Done! ' + records.length + ' records saved.');
-    setTimeout(() => setProgress(0,''), 2000);
-    showToast(records.length + ' records saved to Firebase!', 'success');
-    fileInput.value = '';
-
-  } catch(err) {
-    setProgress(0,'');
-    showToast('Error processing PDF: ' + err.message, 'error');
-    console.error(err);
-  }
-}
-
-// ============================================================
-// SMART DATA EXTRACTOR
-// ============================================================
-function extractRecords(text, filename) {
-  const records = [];
-
-  // Try to extract date from filename first (e.g., sales_01-04-2026.pdf)
-  let globalDate = extractDateFromFilename(filename);
-
-  const lines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length > 2);
-
-  // Strategy 1: Look for date markers in text
-  let currentDate = globalDate;
-
-  for(let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Update current date if line contains a date
-    const lineDate = extractDateFromText(line);
-    if(lineDate) { currentDate = lineDate; continue; }
-
-    // Try to parse a sales row from this line
-    const record = parseSalesLine(line, currentDate || getTodayDate());
-    if(record) records.push(record);
-  }
-
-  // Strategy 2: Key-value block parsing (Date:, Product:, Qty:, Amount:)
-  if(records.length === 0) {
-    const kvRecords = parseKeyValueBlocks(text, globalDate || getTodayDate());
-    records.push(...kvRecords);
-  }
-
-  return records;
-}
-
-function extractDateFromFilename(filename) {
-  // Match patterns: 01-04-2026, 01_04_2026, 2026-04-01, 20260401
-  const patterns = [
-    /(\d{2})[-_](\d{2})[-_](\d{4})/,
-    /(\d{4})[-_](\d{2})[-_](\d{2})/,
-    /(\d{2})\/(\d{2})\/(\d{4})/,
-  ];
-  for(const p of patterns) {
-    const m = filename.match(p);
-    if(m) {
-      if(m[3] && m[3].length === 4) return formatDate(m[3], m[2], m[1]);
-      if(m[1] && m[1].length === 4) return formatDate(m[1], m[2], m[3]);
-    }
-  }
-  return null;
-}
-
-function extractDateFromText(line) {
-  const patterns = [
-    { r:/Date[:\s]+(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/, order:'dmy' },
-    { r:/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/, order:'dmy' },
-    { r:/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/, order:'ymd' },
-    { r:/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s,]+(\d{4})/i, order:'dmy_str' },
-  ];
-  const months = {jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
-  for(const p of patterns) {
-    const m = line.match(p.r);
-    if(m) {
-      if(p.order === 'dmy') return formatDate(m[3], m[2], m[1]);
-      if(p.order === 'ymd') return formatDate(m[1], m[2], m[3]);
-      if(p.order === 'dmy_str') return formatDate(m[3], months[m[2].toLowerCase().slice(0,3)], m[1]);
-    }
-  }
-  return null;
-}
-
-function parseSalesLine(line, date) {
-  // Pattern: "Product Name   20   400" or "Product Name, 20, 400"
-  const patterns = [
-    /^(.+?)\s{2,}(\d+(?:\.\d+)?)\s{1,}(\d+(?:\.\d+)?)$/,
-    /^(.+?)[,\|;]\s*(\d+(?:\.\d+)?)\s*[,\|;]\s*(\d+(?:\.\d+)?)$/,
-    /^(.+?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)$/,
-  ];
-  for(const p of patterns) {
-    const m = line.match(p);
-    if(m) {
-      const name = m[1].trim();
-      const qty = parseFloat(m[2]);
-      const amount = parseFloat(m[3]);
-      if(name.length >= 2 && qty > 0 && amount >= 0 && !isHeaderRow(name)) {
-        return { date, product: normalizeName(name), qty, amount };
-      }
-    }
-  }
-  return null;
-}
-
-function parseKeyValueBlocks(text, defaultDate) {
-  const records = [];
-  let currentDate = defaultDate, currentProduct = null, currentQty = null, currentAmount = null;
-
-  const lines = text.split(/\n|\r/).map(l=>l.trim()).filter(l=>l.length>0);
-
-  for(const line of lines) {
-    const dateMatch = line.match(/date[:\s]+(.+)/i);
-    const productMatch = line.match(/product[:\s]+(.+)/i);
-    const qtyMatch = line.match(/(?:qty|quantity)[:\s]+(\d+(?:\.\d+)?)/i);
-    const amountMatch = line.match(/(?:amount|total|price)[:\s]+(\d+(?:\.\d+)?)/i);
-
-    if(dateMatch) { const d = extractDateFromText(line); if(d) currentDate = d; }
-    if(productMatch) {
-      if(currentProduct && currentQty !== null && currentAmount !== null) {
-        records.push({ date: currentDate, product: normalizeName(currentProduct), qty: currentQty, amount: currentAmount });
-      }
-      currentProduct = productMatch[1].trim();
-      currentQty = null; currentAmount = null;
-    }
-    if(qtyMatch) currentQty = parseFloat(qtyMatch[1]);
-    if(amountMatch) currentAmount = parseFloat(amountMatch[1]);
-  }
-  if(currentProduct && currentQty !== null && currentAmount !== null) {
-    records.push({ date: currentDate, product: normalizeName(currentProduct), qty: currentQty, amount: currentAmount });
-  }
-  return records;
-}
-
-function isHeaderRow(name) {
-  const headers = ['product','item','name','description','sr','no','sno','s.no','total','sub','grand'];
-  return headers.some(h => name.toLowerCase().includes(h));
-}
-
-function normalizeName(name) {
-  return name.replace(/[^\w\s\-().\/]/g,'').replace(/\s+/g,' ').trim();
-}
-
-// Safe Firestore document ID: date + truncated slug (max 100 chars total, well under 1500 byte limit)
-function makeDocId(date, product) {
-  // Slug: lowercase, only alphanumeric and underscores, max 80 chars
-  const slug = product.toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_]/g, '')
-    .slice(0, 80);
-  // Simple numeric hash suffix to prevent collisions from truncation
-  let hash = 0;
-  for(let i = 0; i < product.length; i++) { hash = ((hash << 5) - hash + product.charCodeAt(i)) | 0; }
-  const hashStr = Math.abs(hash).toString(36).slice(0, 6);
-  return (date + '_' + slug + '_' + hashStr).slice(0, 500); // Firestore max is 1500 bytes, 500 chars is very safe
-}
-
-function formatDate(y, m, d) {
-  return y.padStart(4,'0') + '-' + m.toString().padStart(2,'0') + '-' + d.toString().padStart(2,'0');
-}
-
-function getTodayDate() {
-  return new Date().toISOString().slice(0,10);
-}
-
-// ============================================================
-// FIREBASE SAVE (CHUNKED BATCH — handles large PDFs)
-// Firestore batch limit = 500 ops. We use chunks of 200 (read+write pairs)
-// so we stay safely under the limit even with merge reads.
-// ============================================================
-async function saveToFirebase(records) {
-  const CHUNK_SIZE = 200; // safe chunk: 200 records × 2 ops (get+set/update) = 400 ops per batch
-  const total = records.length;
-  let saved = 0;
-
-  for(let chunkStart = 0; chunkStart < total; chunkStart += CHUNK_SIZE) {
-    const chunk = records.slice(chunkStart, chunkStart + CHUNK_SIZE);
-    const batch = db.batch();
-
-    for(const rec of chunk) {
-      // Safe document ID: uses truncated slug + hash — never exceeds 1500 bytes
-      const docId = makeDocId(rec.date, rec.product);
-      const ref = db.collection('sales').doc(docId);
-
-      let existing;
-      try { existing = await ref.get(); } catch(e) { existing = { exists: false }; }
-
-      if(existing.exists) {
-        const old = existing.data();
-        batch.update(ref, {
-          qty: (old.qty || 0) + rec.qty,
-          amount: (old.amount || 0) + rec.amount,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      } else {
-        batch.set(ref, {
-          date: rec.date,
-          product: rec.product,
-          qty: rec.qty,
-          amount: rec.amount,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-    }
-
-    await batch.commit();
-    saved += chunk.length;
-    // Update progress during large uploads
-    const pct = 80 + Math.round((saved / total) * 18);
-    setProgress(pct, `Saving... ${saved}/${total} records`);
-  }
-
-  await loadAllData();
-}
-
-// ============================================================
-// LOAD DATA FROM FIREBASE
-// ============================================================
-async function loadAllData() {
-  if(!db) return;
-  try {
-    const snapshot = await db.collection('sales').orderBy('date','desc').get();
-    allRecords = [];
-    snapshot.forEach(doc => {
-      allRecords.push({ id: doc.id, ...doc.data() });
+    upZone.addEventListener('click', e => {
+      if (e.target.tagName === 'LABEL' || e.target.closest('label') || e.target === fileInput) return;
+      fileInput.click();
     });
-    filteredRecords = [...allRecords];
-    updateStats();
-    renderTable(filteredRecords);
-    renderCharts(filteredRecords);
-    renderProductSummary(filteredRecords);
-    populateProductFilter();
-  } catch(e) {
-    showToast('Error loading data: ' + e.message, 'error');
-    console.error(e);
-  }
-}
+    upZone.addEventListener('dragover', e => { e.preventDefault(); upZone.classList.add('over'); });
+    upZone.addEventListener('dragleave', () => upZone.classList.remove('over'));
+    upZone.addEventListener('drop', e => {
+      e.preventDefault(); upZone.classList.remove('over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.name.toLowerCase().endsWith('.pdf')) go(f);
+      else toast('Please drop a valid PDF', 'err');
+    });
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) go(e.target.files[0]); fileInput.value = ''; });
 
-// ============================================================
-// FILTERS
-// ============================================================
-function applyFilters() {
-  const date = document.getElementById('filterDate').value;
-  const product = document.getElementById('filterProduct').value;
-  const search = document.getElementById('searchInput').value.toLowerCase();
+    // ─── MAIN HANDLER ───────────────────────────────────────────
+    async function go(file) {
+      prog(5, 'Reading PDF…');
+      clearLog();
+      log('📄 ' + file.name);
+      toast('Processing: ' + file.name);
+      try {
+        const buf = await file.arrayBuffer();
+        prog(15, 'Loading…');
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        log('📃 Pages: ' + pdf.numPages);
 
-  filteredRecords = allRecords.filter(r => {
-    if(date && r.date !== date) return false;
-    if(product && r.product !== product) return false;
-    if(search && !r.product.toLowerCase().includes(search)) return false;
-    return true;
-  });
+        let items = [];
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const c = await page.getTextContent();
+          c.items.forEach(it => {
+            if (it.str.trim()) items.push({ s: it.str.trim(), x: Math.round(it.transform[4]), y: Math.round(it.transform[5]), pg: p });
+          });
+          prog(15 + Math.round(p / pdf.numPages * 35), `Page ${p}/${pdf.numPages}`);
+        }
+        log('📝 Items: ' + items.length);
 
-  renderTable(filteredRecords);
-  renderCharts(filteredRecords);
-  renderProductSummary(filteredRecords);
-}
+        prog(55, 'Detecting column structure…');
+        const rows = groupRows(items);
+        log('📊 Rows: ' + rows.length);
 
-function clearFilters() {
-  document.getElementById('filterDate').value = '';
-  document.getElementById('filterProduct').value = '';
-  document.getElementById('searchInput').value = '';
-  filteredRecords = [...allRecords];
-  renderTable(filteredRecords);
-  renderCharts(filteredRecords);
-  renderProductSummary(filteredRecords);
-}
+        const records = extract(rows, file.name);
+        log('🥃 Whisky sale records: ' + records.length);
 
-function populateProductFilter() {
-  const sel = document.getElementById('filterProduct');
-  const current = sel.value;
-  const products = [...new Set(allRecords.map(r => r.product))].sort();
-  sel.innerHTML = '<option value="">All Products</option>' +
-    products.map(p => `<option value="${p}" ${p===current?'selected':''}>${p}</option>`).join('');
-}
+        prog(92, 'Building table…');
+        if (!records.length) {
+          prog(0); toast('No whisky Sale Qty found — check your PDF format', 'err');
+          log('⚠ No records. Make sure PDF has "Sale Qty" or "Sale Quantity" column.', 'w'); return;
+        }
 
-// ============================================================
-// RENDER TABLE
-// ============================================================
-function renderTable(records) {
-  const tbody = document.getElementById('tableBody');
-  document.getElementById('tableCount').textContent = records.length + ' records';
+        let added = 0, upd = 0;
+        records.forEach(r => {
+          const ex = allRec.find(x => x.date === r.date && x.product === r.product);
+          if (ex) { ex.saleQty += r.saleQty; upd++; } else { allRec.push(r); added++; }
+        });
+        log(`✅ Added:${added} Updated:${upd}`);
 
-  if(records.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state">
-      <div class="empty-text">No records match your filters</div>
-      <div class="empty-sub">Try clearing filters or upload a PDF</div>
-    </div></td></tr>`;
-    return;
-  }
+        prog(100, 'Done!');
+        setTimeout(() => prog(0), 1800);
+        toast(`✅ ${records.length} whisky sale records extracted!`, 'ok');
 
-  tbody.innerHTML = records.map(r => `
-    <tr>
-      <td class="date-cell">${r.date || '-'}</td>
-      <td><span class="product-badge">${r.product || '-'}</span></td>
-      <td class="qty-cell">${(r.qty || 0).toLocaleString()}</td>
-      <td class="amount-cell">${(r.amount || 0).toLocaleString('en-IN', {minimumFractionDigits:2})}</td>
-    </tr>
-  `).join('');
-}
+        updateStats(); populateDates(); applyF();
+      } catch (e) {
+        prog(0); toast('Error: ' + e.message, 'err'); log('❌ ' + e.message, 'e'); console.error(e);
+      }
+    }
 
-// ============================================================
-// STATS
-// ============================================================
-function updateStats() {
-  const revenue = allRecords.reduce((s,r) => s + (r.amount||0), 0);
-  const qty = allRecords.reduce((s,r) => s + (r.qty||0), 0);
-  const products = new Set(allRecords.map(r=>r.product)).size;
-  const days = new Set(allRecords.map(r=>r.date)).size;
+    // ─── ROW GROUPER ────────────────────────────────────────────
+    function groupRows(items) {
+      const sorted = [...items].sort((a, b) => {
+        if (a.pg !== b.pg) return a.pg - b.pg;
+        if (Math.abs(a.y - b.y) > 4) return b.y - a.y;
+        return a.x - b.x;
+      });
+      const rows = []; let cur = [], ly = null, lp = null;
+      for (const it of sorted) {
+        if (ly === null || it.pg !== lp || Math.abs(it.y - ly) > 4) {
+          if (cur.length) rows.push(cur);
+          cur = [it]; ly = it.y; lp = it.pg;
+        } else cur.push(it);
+      }
+      if (cur.length) rows.push(cur);
+      return rows;
+    }
 
-  document.getElementById('statRevenue').textContent = revenue.toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:0});
-  document.getElementById('statQty').textContent = qty.toLocaleString();
-  document.getElementById('statProducts').textContent = products;
-  document.getElementById('statDays').textContent = days;
-}
+    // ─── CORE EXTRACTOR ─────────────────────────────────────────
+    //
+    // STRATEGY:
+    // 1. Scan for header row containing "Sale" and "Qty" → record X position
+    // 2. For each data row, assign number closest to saleColX → that is Sale Qty
+    // 3. If no header detected, use fallback (first number = sale qty)
+    //
+    function extract(rows, filename) {
+      const recs = [];
+      let currentDate = extractDateFromFilename(filename);
+      let saleX = null, stockX = null, balanceX = null, headerIdx = -1;
 
-// ============================================================
-// CHARTS
-// ============================================================
-function renderCharts(records) {
-  // --- Daily Revenue ---
-  const byDate = {};
-  const byDateQty = {};
-  records.forEach(r => {
-    byDate[r.date] = (byDate[r.date]||0) + (r.amount||0);
-    byDateQty[r.date] = (byDateQty[r.date]||0) + (r.qty||0);
-  });
-  const dates = Object.keys(byDate).sort();
-  const amounts = dates.map(d=>byDate[d]);
-  const qtys = dates.map(d=>byDateQty[d]);
+      // STEP 1: find header row
+      for (let i = 0; i < rows.length; i++) {
+        const rt = rows[i].map(t => t.s).join(' ');
+        const lrt = rt.toLowerCase();
+        if (lrt.includes('sale') && (lrt.includes('qty') || lrt.includes('quantity'))) {
+          headerIdx = i;
+          for (const t of rows[i]) {
+            const s = t.s.toLowerCase();
+            if (s.includes('sale')) saleX = t.x;
+            // Track columns to EXCLUDE: stock, balance, opening
+            if ((s.includes('stock') || s.includes('opening') || s.includes('closing')) && stockX === null) stockX = t.x;
+            if (s.includes('balance') && balanceX === null) balanceX = t.x;
+          }
+          log(`📐 Cols: SaleX=${saleX || '?'}, StockX=${stockX || '?'}, BalX=${balanceX || '?'}`);
+          break;
+        }
+      }
 
-  if(chartDaily) chartDaily.destroy();
-  const ctx1 = document.getElementById('chartDaily').getContext('2d');
-  chartDaily = new Chart(ctx1, {
-    type:'bar',
-    data:{ labels:dates, datasets:[{
-      label:'Revenue', data:amounts,
-      backgroundColor:'rgba(108,99,255,0.7)', borderColor:'#6c63ff', borderWidth:1, borderRadius:6
-    }]},
-    options:{ responsive:true, plugins:{ legend:{labels:{color:'#8888aa'}}}, scales:{
-      x:{ticks:{color:'#8888aa'},grid:{color:'rgba(255,255,255,0.05)'}},
-      y:{ticks:{color:'#8888aa'},grid:{color:'rgba(255,255,255,0.05)'}}
-    }}
-  });
+      const TOL = 45; // pixel tolerance for column matching
 
-  // --- Product Revenue Doughnut ---
-  const byProduct = {};
-  records.forEach(r => { byProduct[r.product] = (byProduct[r.product]||0) + (r.amount||0); });
-  const prodNames = Object.keys(byProduct).sort((a,b)=>byProduct[b]-byProduct[a]).slice(0,8);
-  const prodAmounts = prodNames.map(p=>byProduct[p]);
-  const colors = ['#6c63ff','#ff6584','#43e97b','#f9c74f','#4cc9f0','#f4a261','#a8dadc','#e63946'];
+      for (let i = (headerIdx >= 0 ? headerIdx + 1 : 0); i < rows.length; i++) {
+        const row = rows[i];
+        const rt = row.map(t => t.s).join(' ');
 
-  if(chartProduct) chartProduct.destroy();
-  const ctx2 = document.getElementById('chartProduct').getContext('2d');
-  chartProduct = new Chart(ctx2, {
-    type:'doughnut',
-    data:{ labels:prodNames, datasets:[{ data:prodAmounts, backgroundColor:colors, borderWidth:0 }]},
-    options:{ responsive:true, plugins:{ legend:{position:'bottom',labels:{color:'#8888aa',padding:12,font:{size:11}}}}}
-  });
+        // Date detection
+        const dt = dateFromText(rt);
+        if (dt) { currentDate = dt; continue; }
 
-  // --- Qty Bar ---
-  if(chartQty) chartQty.destroy();
-  const ctx3 = document.getElementById('chartQty').getContext('2d');
-  chartQty = new Chart(ctx3, {
-    type:'line',
-    data:{ labels:dates, datasets:[{
-      label:'Quantity', data:qtys,
-      backgroundColor:'rgba(255,101,132,0.15)', borderColor:'#ff6584',
-      borderWidth:2, fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#ff6584'
-    }]},
-    options:{ responsive:true, plugins:{ legend:{labels:{color:'#8888aa'}}}, scales:{
-      x:{ticks:{color:'#8888aa'},grid:{color:'rgba(255,255,255,0.05)'}},
-      y:{ticks:{color:'#8888aa'},grid:{color:'rgba(255,255,255,0.05)'}}
-    }}
-  });
-}
+        // Separate name tokens vs number tokens
+        const nameToks = [], numToks = [];
+        for (const t of row) {
+          const c = t.s.replace(/,/g, '').trim();
+          if (/^-?\d+(\.\d+)?$/.test(c)) numToks.push({ v: parseFloat(c), x: t.x });
+          else nameToks.push(t.s.trim());
+        }
+        if (!numToks.length || !nameToks.length) continue;
 
-// ============================================================
-// PRODUCT SUMMARY
-// ============================================================
-function renderProductSummary(records) {
-  const tbody = document.getElementById('productTableBody');
-  const summary = {};
-  records.forEach(r => {
-    if(!summary[r.product]) summary[r.product] = { qty:0, amount:0, days:new Set() };
-    summary[r.product].qty += (r.qty||0);
-    summary[r.product].amount += (r.amount||0);
-    summary[r.product].days.add(r.date);
-  });
+        // Build product name, skip leading serial
+        let np = nameToks.filter(Boolean);
+        if (/^\d+\.?$/.test(np[0])) np = np.slice(1);
+        const pname = np.join(' ').trim();
+        if (pname.length < 3 || !isWhisky(pname) || isSkip(pname)) continue;
 
-  const sorted = Object.entries(summary).sort((a,b)=>b[1].amount-a[1].amount);
-  document.getElementById('productCount').textContent = sorted.length + ' products';
+        let qtyToken = null;
 
-  if(sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
-      <div class="empty-text">No product data</div></div></td></tr>`;
-    return;
-  }
+        if (saleX !== null) {
+          // Find number closest to saleX
+          let best = null, bd = Infinity;
+          for (const nt of numToks) {
+            const d = Math.abs(nt.x - saleX);
+            if (d < bd && d < TOL) {
+              // Verify it's not actually closer to stock or balance columns
+              let rejected = false;
+              if (stockX !== null && Math.abs(nt.x - stockX) < d) rejected = true;
+              if (balanceX !== null && Math.abs(nt.x - balanceX) < d) rejected = true;
 
-  tbody.innerHTML = sorted.map(([name, s]) => `
-    <tr>
-      <td><span class="product-badge">${name}</span></td>
-      <td class="qty-cell">${s.qty.toLocaleString()}</td>
-      <td class="amount-cell">${s.amount.toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
-      <td style="color:var(--text2);">${s.days.size}</td>
-      <td class="qty-cell">${s.days.size > 0 ? (s.qty/s.days.size).toFixed(1) : '-'}</td>
-    </tr>
-  `).join('');
-}
+              if (!rejected) {
+                bd = d;
+                best = nt;
+              }
+            }
+          }
+          // If we have a header, we MUST match the column. No blind fallback to numToks[0].
+          qtyToken = best;
+        } else {
+          // No header: fallback to first number (risky, but sometimes necessary)
+          qtyToken = numToks[0];
+        }
 
-// ============================================================
-// EXPORT CSV
-// ============================================================
-function exportCSV() {
-  if(filteredRecords.length === 0){ showToast('No data to export', 'error'); return; }
-  const header = 'Date,Product,Quantity,Amount\n';
-  const rows = filteredRecords.map(r => `${r.date},"${r.product}",${r.qty},${r.amount}`).join('\n');
-  const blob = new Blob([header+rows], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'sales_export_' + getTodayDate() + '.csv';
-  a.click();
-  showToast('CSV exported!', 'success');
-}
+        if (!qtyToken || isNaN(qtyToken.v) || qtyToken.v <= 0) continue;
 
-// ============================================================
-// TABS
-// ============================================================
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  btn.classList.add('active');
-}
+        recs.push({ date: currentDate || today(), product: norm(pname), saleQty: qtyToken.v, isMyBrand: isMyBrand(pname) });
+      }
+      return recs;
+    }
 
-// ============================================================
-// PROGRESS & TOAST
-// ============================================================
-function setProgress(pct, msg) {
-  const wrap = document.getElementById('progressWrap');
-  const bar = document.getElementById('progressBar');
-  const txt = document.getElementById('progressText');
-  if(pct <= 0) { wrap.style.display='none'; txt.textContent=''; return; }
-  wrap.style.display='block';
-  bar.style.width = pct + '%';
-  txt.textContent = msg;
-}
+    // ─── DATE HELPERS ───────────────────────────────────────────
+    const MON = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+    function extractDateFromFilename(fn) {
+      const p1 = fn.match(/(\d{2})[-_](\d{2})[-_](\d{4})/); if (p1) return p1[3] + '-' + p1[2].padStart(2, '0') + '-' + p1[1].padStart(2, '0');
+      const p2 = fn.match(/(\d{4})[-_](\d{2})[-_](\d{2})/); if (p2) return p2[1] + '-' + p2[2].padStart(2, '0') + '-' + p2[3].padStart(2, '0');
+      return null;
+    }
+    function dateFromText(l) {
+      const p1 = l.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/); if (p1) return p1[3] + '-' + p1[2].padStart(2, '0') + '-' + p1[1].padStart(2, '0');
+      const p2 = l.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/); if (p2) return p2[1] + '-' + p2[2].padStart(2, '0') + '-' + p2[3].padStart(2, '0');
+      const p3 = l.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s,]+(\d{4})/i);
+      if (p3) return p3[3] + '-' + (MON[p3[2].slice(0, 3).toLowerCase()] || '01') + '-' + p3[1].padStart(2, '0');
+      // "02-Mar" without year
+      const p4 = l.match(/^(\d{1,2})[-\s](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i);
+      if (p4) return new Date().getFullYear() + '-' + (MON[p4[2].slice(0, 3).toLowerCase()] || '01') + '-' + p4[1].padStart(2, '0');
+      return null;
+    }
+    function today() { return new Date().toISOString().slice(0, 10); }
+    function fmtD(iso) {
+      if (!iso) return '—';
+      const [y, m, d] = iso.split('-');
+      return d + '-' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m - 1];
+    }
+    function norm(s) { return s.replace(/\s+/g, ' ').trim(); }
 
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
-  t.className = 'toast ' + type;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
+    // ─── FILTERS ────────────────────────────────────────────────
+    function applyF() {
+      const df = document.getElementById('fDate').value;
+      const bf = document.getElementById('fBrand').value;
+      const sf = document.getElementById('fSearch').value.toLowerCase().trim();
+      filtRec = allRec.filter(r => {
+        if (df && r.date !== df) return false;
+        if (bf === 'my' && !r.isMyBrand) return false;
+        if (bf === 'comp' && r.isMyBrand) return false;
+        if (sf && !r.product.toLowerCase().includes(sf)) return false;
+        return true;
+      });
+      renderPivot();
+    }
+    function resetF() {
+      document.getElementById('fDate').value = '';
+      document.getElementById('fBrand').value = '';
+      document.getElementById('fSearch').value = '';
+      applyF();
+    }
+    function populateDates() {
+      const s = document.getElementById('fDate'), cv = s.value;
+      const dates = [...new Set(allRec.map(r => r.date))].sort();
+      s.innerHTML = '<option value="">All Dates</option>' +
+        dates.map(d => `<option value="${d}" ${d === cv ? 'selected' : ''}>${fmtD(d)} (${d})</option>`).join('');
+    }
 
-// ============================================================
-// START
-// ============================================================
-window.addEventListener('load', () => {
-  initFirebase();
-});
-</script>
+    // ─── PIVOT RENDER ───────────────────────────────────────────
+    // ROWS = dates  |  COLUMNS = products (my brands first)
+    function renderPivot() {
+      const sc = document.getElementById('tScroll');
+      if (!filtRec.length) {
+        sc.innerHTML = `<div class="empty"><div class="empty-icon">🥃</div><div class="empty-title">No data</div><div class="empty-sub">Upload a PDF or adjust filters</div></div>`;
+        document.getElementById('tMeta').textContent = '—'; return;
+      }
+
+      const dates = [...new Set(filtRec.map(r => r.date))].sort();
+      const myProds = [...new Set(filtRec.filter(r => r.isMyBrand).map(r => r.product))];
+      const cmpProds = [...new Set(filtRec.filter(r => !r.isMyBrand).map(r => r.product))].sort();
+      const allProds = [...myProds, ...cmpProds];
+
+      // lookup[product][date] = qty
+      const lkp = {};
+      filtRec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
+
+      document.getElementById('tMeta').textContent = `${dates.length} date(s) × ${allProds.length} products`;
+
+      // ── header ──
+      // Short product names for column headers
+      const prodHdrs = allProds.map(p => {
+        const mb = myProds.includes(p);
+        const sh = p.length > 20 ? p.slice(0, 18) + '…' : p;
+        return `<th class="${mb ? 'mbh' : ''}" title="${p}">${sh}</th>`;
+      }).join('');
+
+      // ── compute totals ──
+      const rowTot = {}, colTot = {};
+      let grand = 0;
+      dates.forEach(d => {
+        rowTot[d] = 0;
+        allProds.forEach(p => {
+          const v = lkp[p]?.[d] || 0;
+          rowTot[d] += v; colTot[p] = (colTot[p] || 0) + v; grand += v;
+        });
+      });
+
+      // ── body rows ──
+      let body = '';
+      dates.forEach(d => {
+        const cells = allProds.map(p => {
+          const mb = myProds.includes(p);
+          const v = lkp[p]?.[d] || 0;
+          return `<td class="${mb ? 'mbc' : 'compc'} ${v > 0 ? 'hv' : 'zv'}">${v > 0 ? v.toLocaleString() : '0'}</td>`;
+        }).join('');
+        body += `<tr><td class="dc">${fmtD(d)}</td>${cells}<td class="totc">${rowTot[d].toLocaleString()}</td></tr>`;
+      });
+
+      // totals row
+      const colTotCells = allProds.map(p => {
+        const mb = myProds.includes(p);
+        return `<td class="${mb ? 'mbc' : ''}">${(colTot[p] || 0).toLocaleString()}</td>`;
+      }).join('');
+      body += `<tr class="trow"><td class="dc">TOTAL</td>${colTotCells}<td class="totc">${grand.toLocaleString()}</td></tr>`;
+
+      sc.innerHTML = `
+    <table class="ptbl" id="ptbl">
+      <thead>
+        <tr>
+          <th class="dh">DATE</th>
+          ${prodHdrs}
+          <th class="toth">TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>${body}</tbody>
+    </table>`;
+    }
+
+    // ─── STATS ──────────────────────────────────────────────────
+    function updateStats() {
+      const tot = allRec.reduce((s, r) => s + r.saleQty, 0);
+      const myQ = allRec.filter(r => r.isMyBrand).reduce((s, r) => s + r.saleQty, 0);
+      document.getElementById('sTot').textContent = tot.toLocaleString();
+      document.getElementById('sMy').textContent = myQ.toLocaleString();
+      document.getElementById('sCmp').textContent = (tot - myQ).toLocaleString();
+      document.getElementById('sPrd').textContent = new Set(allRec.map(r => r.product)).size;
+      document.getElementById('sDy').textContent = new Set(allRec.map(r => r.date)).size;
+      document.getElementById('hpill').textContent = allRec.length + ' records';
+    }
+
+    // ─── EXPORT CSV ─────────────────────────────────────────────
+    function exportCSV() {
+      if (!filtRec.length) { toast('No data to export', 'err'); return; }
+      const dates = [...new Set(filtRec.map(r => r.date))].sort();
+      const myP = [...new Set(filtRec.filter(r => r.isMyBrand).map(r => r.product))];
+      const cP = [...new Set(filtRec.filter(r => !r.isMyBrand).map(r => r.product))].sort();
+      const prods = [...myP, ...cP];
+      const lkp = {};
+      filtRec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
+      const hdr = ['"DATE"', ...prods.map(p => `"${p}"`), 'TOTAL'].join(',');
+      const rows = dates.map(d => {
+        const vals = prods.map(p => lkp[p]?.[d] || 0);
+        return [fmtD(d), ...vals, vals.reduce((s, v) => s + v, 0)].join(',');
+      });
+      const totRow = ['TOTAL', ...prods.map(p => Object.values(lkp[p] || {}).reduce((s, v) => s + v, 0)), filtRec.reduce((s, r) => s + r.saleQty, 0)].join(',');
+      const csv = [hdr, ...rows, totRow].join('\n');
+      dl(new Blob([csv], { type: 'text/csv' }), 'whisky_sales_' + today() + '.csv');
+      toast('CSV exported!', 'ok');
+    }
+
+    // ─── EXPORT PDF ─────────────────────────────────────────────
+    function exportPDF() {
+      if (!filtRec.length) { toast('No data to export', 'err'); return; }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const W = doc.internal.pageSize.width, H = doc.internal.pageSize.height;
+
+      const dates = [...new Set(filtRec.map(r => r.date))].sort();
+      const myP = [...new Set(filtRec.filter(r => r.isMyBrand).map(r => r.product))];
+      const cP = [...new Set(filtRec.filter(r => !r.isMyBrand).map(r => r.product))].sort();
+      const prods = [...myP, ...cP];
+      const lkp = {};
+      filtRec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
+
+      // ── Header ──
+      doc.setFillColor(26, 79, 160);
+      doc.rect(0, 0, W, 14, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(255, 255, 255);
+      doc.text('Whisky Sales Dashboard — Sale Quantity Report', 14, 9);
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
+      doc.text(`Generated: ${new Date().toLocaleString('en-IN')}  |  Period: ${fmtD(dates[0])} – ${fmtD(dates[dates.length - 1])}  |  Products: ${prods.length}  |  Dates: ${dates.length}`, 14, 13);
+
+      // ── Legend ──
+      doc.setFillColor(255, 248, 230); doc.rect(14, 16, 60, 5, 'F');
+      doc.setTextColor(184, 134, 11); doc.setFontSize(7);
+      doc.text('★ MY BRANDS: John Martin & Silver', 16, 20);
+      doc.setFillColor(235, 244, 255); doc.rect(77, 16, 50, 5, 'F');
+      doc.setTextColor(44, 82, 130);
+      doc.text('● COMPETITOR BRANDS', 79, 20);
+
+      // ── Build table ──
+      const shortP = prods.map(p => p.length > 18 ? p.slice(0, 16) + '…' : p);
+      const head = [['DATE', ...shortP, 'TOTAL']];
+
+      const body = dates.map(d => {
+        const vals = prods.map(p => { const v = lkp[p]?.[d] || 0; return v === 0 ? '0' : v.toLocaleString(); });
+        const rt = prods.reduce((s, p) => s + (lkp[p]?.[d] || 0), 0);
+        return [fmtD(d), ...vals, rt.toLocaleString()];
+      });
+
+      // Totals row
+      body.push(['TOTAL', ...prods.map(p => { const v = Object.values(lkp[p] || {}).reduce((s, x) => s + x, 0); return v === 0 ? '0' : v.toLocaleString(); }), filtRec.reduce((s, r) => s + r.saleQty, 0).toLocaleString()]);
+
+      // Column styles
+      const cs = {};
+      prods.forEach((p, i) => { if (myP.includes(p)) cs[i + 1] = { fillColor: [255, 248, 225] }; });
+      cs[prods.length + 1] = { fillColor: [235, 244, 255], fontStyle: 'bold', textColor: [26, 79, 160] };
+
+      doc.autoTable({
+        head, body, startY: 23,
+        styles: { fontSize: 6.5, cellPadding: 1.8, halign: 'center', lineColor: [210, 218, 230], lineWidth: 0.2, font: 'courier' },
+        headStyles: { fillColor: [26, 63, 122], textColor: 255, fontStyle: 'bold', fontSize: 6.5, halign: 'center' },
+        columnStyles: {
+          0: { halign: 'left', fontStyle: 'bold', fillColor: [248, 250, 255], minCellWidth: 15 },
+          ...cs,
+        },
+        alternateRowStyles: { fillColor: [252, 253, 255] },
+        didParseCell(data) {
+          const last = body.length - 1;
+          if (data.row.index === last) {
+            data.cell.styles.fillColor = [26, 47, 96];
+            data.cell.styles.textColor = 255;
+            data.cell.styles.fontStyle = 'bold';
+          }
+          if (data.row.index === last && data.column.index > 0 && data.column.index <= myP.length) {
+            data.cell.styles.fillColor = [122, 77, 0];
+            data.cell.styles.textColor = [255, 224, 160];
+          }
+        },
+        margin: { left: 8, right: 8 }, tableWidth: 'auto',
+      });
+
+      // Page footer
+      const pages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i); doc.setFontSize(6.5); doc.setTextColor(150);
+        doc.text(`Whisky Sales Dashboard  |  Page ${i}/${pages}`, 14, H - 4);
+        doc.text('Sale Quantity Only — Stock & Balance Excluded', W - 12, H - 4, { align: 'right' });
+      }
+
+      doc.save('whisky_sales_' + today() + '.pdf');
+      toast('PDF exported!', 'ok');
+    }
+
+    // ─── CLEAR ──────────────────────────────────────────────────
+    function clearAll() {
+      if (!allRec.length) { toast('Nothing to clear', 'err'); return; }
+      if (!confirm('Clear all loaded data?')) return;
+      allRec = []; filtRec = []; updateStats(); populateDates(); applyF();
+      toast('Data cleared');
+    }
+
+    // ─── UTILS ──────────────────────────────────────────────────
+    function dl(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); }
+
+    function prog(pct, msg = '') {
+      const w = document.getElementById('pw'), f = document.getElementById('pf'), l = document.getElementById('pl');
+      if (pct <= 0) { w.style.display = 'none'; return; }
+      w.style.display = 'block'; f.style.width = pct + '%'; l.textContent = msg;
+    }
+
+    function toast(msg, type = 'ok') {
+      const el = document.getElementById('toast');
+      document.getElementById('tMsg').textContent = msg;
+      document.getElementById('tIcon').textContent = type === 'err' ? '✕' : '✓';
+      el.className = 'toast ' + type;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3500);
+    }
+
+    function log(msg, type = '') {
+      const el = document.getElementById('logEl');
+      el.classList.add('vis');
+      const d = document.createElement('div');
+      d.className = type === 'w' ? 'lw' : type === 'e' ? 'le' : '';
+      d.textContent = msg;
+      el.appendChild(d);
+      el.scrollTop = el.scrollHeight;
+    }
+    function clearLog() {
+      const el = document.getElementById('logEl');
+      el.innerHTML = ''; el.classList.remove('vis');
+    }
+
+    // Init
+    applyF(); updateStats();
+
+    // ─── POPULATE COMPARE DROPDOWNS ────────────────────────────
+    function populateCompare() {
+      const prods = [...new Set(allRec.map(r => r.product))].sort();
+      ['cmpA','cmpB','cmpC'].forEach((id, i) => {
+        const sel = document.getElementById(id);
+        const cur = sel.value;
+        const firstOpt = i === 2 ? '<option value="">-- None --</option>' : '<option value="">-- Select Product --</option>';
+        sel.innerHTML = firstOpt + prods.map(p => `<option value="${p}" ${p===cur?'selected':''}>${p.length>42?p.slice(0,40)+'…':p}</option>`).join('');
+      });
+    }
+
+    // ─── RUN COMPARISON ────────────────────────────────────────
+    const CMP_COLORS = ['#1a4fa0','#b8860b','#276749','#c53030','#7c3aed'];
+    function runCompare() {
+      const a = document.getElementById('cmpA').value;
+      const b = document.getElementById('cmpB').value;
+      const c = document.getElementById('cmpC').value;
+      if (!a || !b) { toast('Select at least Product A and B', 'err'); return; }
+      const selected = [a, b, ...(c ? [c] : [])];
+      const dates = [...new Set(allRec.map(r => r.date))].sort();
+
+      // Build lookup
+      const lkp = {};
+      selected.forEach(p => { lkp[p] = {}; });
+      allRec.forEach(r => { if (lkp[r.product] !== undefined) lkp[r.product][r.date] = (lkp[r.product][r.date]||0)+r.saleQty; });
+
+      // Totals per product
+      const totals = selected.map(p => Object.values(lkp[p]).reduce((s,v)=>s+v,0));
+      const maxVal = Math.max(...dates.map(d => Math.max(...selected.map(p => lkp[p][d]||0))), 1);
+      const CHART_H = 180;
+
+      // Bar chart
+      const chart = document.getElementById('cmpBarChart');
+      chart.innerHTML = dates.map(d => {
+        const bars = selected.map((p, ci) => {
+          const v = lkp[p][d] || 0;
+          const h = Math.round((v / maxVal) * CHART_H);
+          return `<div class="bar-item"><div class="bar-val">${v||''}</div><div class="bar" style="height:${h}px;background:${CMP_COLORS[ci]}" title="${p}: ${v}"></div></div>`;
+        }).join('');
+        return `<div class="bar-group"><div class="bars-row">${bars}</div><div class="bar-group-label">${fmtD(d)}</div></div>`;
+      }).join('');
+
+      // Legend
+      document.getElementById('cmpLegend').innerHTML = selected.map((p, ci) =>
+        `<div class="cmp-leg-item"><div class="cmp-leg-dot" style="background:${CMP_COLORS[ci]}"></div><span title="${p}">${p.length>36?p.slice(0,34)+'…':p}</span></div>`
+      ).join('');
+
+      // Summary table
+      const winnerIdx = totals.indexOf(Math.max(...totals));
+      const thead = `<thead><tr><th>Date</th>${selected.map((p,ci)=>`<th style="background:${CMP_COLORS[ci]}">${p.length>20?p.slice(0,18)+'…':p}</th>`).join('')}<th>Winner</th></tr></thead>`;
+      const tbody = dates.map(d => {
+        const vals = selected.map(p => lkp[p][d]||0);
+        const maxD = Math.max(...vals);
+        const cells = vals.map((v,ci)=>`<td class="${v===maxD&&maxD>0?'winner':v===0?'zv':''}"> ${v.toLocaleString()}</td>`).join('');
+        const wi = vals.indexOf(maxD);
+        const wName = maxD > 0 ? (selected[wi].length>16?selected[wi].slice(0,14)+'…':selected[wi]) : '—';
+        return `<tr><td>${fmtD(d)}</td>${cells}<td class="winner">${wName}</td></tr>`;
+      }).join('');
+      const totRow = `<tr style="background:#1a2f60;color:white;font-weight:700"><td>TOTAL</td>${totals.map((t,ci)=>`<td class="${ci===winnerIdx?'winner':''}"> ${t.toLocaleString()}</td>`).join('')}<td class="winner">${selected[winnerIdx].length>16?selected[winnerIdx].slice(0,14)+'…':selected[winnerIdx]}</td></tr>`;
+      const tbl = document.getElementById('cmpTable');
+      tbl.innerHTML = thead + `<tbody>${tbody}${totRow}</tbody>`;
+
+      document.getElementById('cmpChartWrap').classList.add('vis');
+    }
+
+    function clearCompare() {
+      ['cmpA','cmpB','cmpC'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cmpChartWrap').classList.remove('vis');
+    }
+
+    // ─── FIREBASE SAVE ──────────────────────────────────────────
+    async function saveToFirebase(records) {
+      if (!window.fbReady) { log('⚠ Firebase not ready yet', 'w'); return; }
+      const badge = document.getElementById('fbBadge');
+      try {
+        badge.className = 'fb-badge saving'; badge.textContent = '🔥 Saving…';
+        const col = window._fbCol(window._fbDb, 'whisky_sales');
+        let saved = 0;
+        for (const r of records) {
+          await window._fbAdd(col, { ...r, savedAt: new Date().toISOString() });
+          saved++;
+        }
+        badge.className = 'fb-badge ok'; badge.textContent = `🔥 ${saved} saved`;
+        setTimeout(() => { badge.className = 'fb-badge ok'; badge.textContent = '🔥 Firebase ✓'; }, 3000);
+        toast(`☁ ${saved} records saved to Firebase!`, 'ok');
+      } catch (e) {
+        badge.className = 'fb-badge err'; badge.textContent = '🔥 Error';
+        toast('Firebase error: ' + e.message, 'err');
+        log('❌ Firebase: ' + e.message, 'e');
+      }
+    }
+
+    // ─── FIREBASE LOAD ──────────────────────────────────────────
+    async function loadFromFirebase() {
+      if (!window.fbReady) { toast('Firebase not ready', 'err'); return; }
+      const badge = document.getElementById('fbBadge');
+      try {
+        badge.className = 'fb-badge saving'; badge.textContent = '🔥 Loading…';
+        const col = window._fbCol(window._fbDb, 'whisky_sales');
+        const snap = await window._fbGet(col);
+        let added = 0;
+        snap.forEach(doc => {
+          const r = doc.data();
+          const ex = allRec.find(x => x.date===r.date && x.product===r.product);
+          if (!ex) { allRec.push({ date:r.date, product:r.product, saleQty:r.saleQty, isMyBrand:r.isMyBrand }); added++; }
+        });
+        badge.className = 'fb-badge ok'; badge.textContent = `🔥 ${added} loaded`;
+        updateStats(); populateDates(); populateCompare(); applyF();
+        toast(`☁ ${added} new records loaded from Firebase!`, 'ok');
+
+        // Show history panel
+        const list = document.getElementById('fbRecList');
+        list.innerHTML = '';
+        const recent = [...allRec].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,50);
+        recent.forEach(r => {
+          const el = document.createElement('div');
+          el.className = 'fb-rec-item';
+          el.innerHTML = `<span class="fb-ri-name">${r.product.length>40?r.product.slice(0,38)+'…':r.product}</span><span class="fb-ri-meta">${fmtD(r.date)} · ${r.saleQty} qty · ${r.isMyBrand?'⭐ My Brand':'Competitor'}</span>`;
+          list.appendChild(el);
+        });
+        document.getElementById('fbHistPanel').style.display = 'block';
+      } catch (e) {
+        badge.className = 'fb-badge err'; badge.textContent = '🔥 Error';
+        toast('Firebase load error: ' + e.message, 'err');
+      }
+    }
+
+    // ─── INIT ────────────────────────────────────────────────────
+    applyF(); updateStats(); populateCompare();
+  </script>
 </body>
+
 </html>
