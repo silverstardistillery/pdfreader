@@ -237,6 +237,51 @@
     ::-webkit-scrollbar{width:5px;height:5px;}
     ::-webkit-scrollbar-track{background:var(--surface);}
     ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+    /* ── MOBILE RESPONSIVE ── */
+    @media(max-width:900px){
+      .admin-layout{grid-template-columns:1fr;}
+      .dash-stats{grid-template-columns:repeat(2,1fr);}
+      .dash-grid{grid-template-columns:1fr;}
+      .topnav{flex-wrap:wrap;height:auto;padding:10px 14px;gap:8px;}
+      .nav-tabs{order:3;width:100%;justify-content:center;}
+      .nav-right{order:2;}
+      .panel{padding:14px;}
+      .preview-hdr{flex-direction:column;align-items:flex-start;}
+      .compare-hdr{flex-direction:column;gap:6px;}
+      .cmp-slot{min-width:100%;max-width:100%;}
+      .cmp-slots-row{flex-direction:column;}
+      .ac-input{font-size:.85rem;}
+      .ac-drop{min-width:280px;}
+      .edit-tbl-wrap{max-height:40vh;}
+      .tbl-scroll{max-height:45vh;}
+      .dash-card.full{grid-column:1;}
+      .brands-tbl{font-size:.7rem;}
+      .stat-val{font-size:1.2rem;}
+      .date-nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
+      .date-chip{white-space:nowrap;}
+      .pivot-card{overflow:hidden;}
+      .modal-box{padding:20px 16px;}
+    }
+    @media(max-width:480px){
+      .dash-stats{grid-template-columns:1fr 1fr;}
+      .topnav{padding:8px 10px;}
+      .nav-logo{font-size:.95rem;}
+      .btn{padding:6px 10px;font-size:.72rem;}
+      .compare-actions{flex-direction:column;gap:6px;}
+      .preview-actions{flex-wrap:wrap;gap:5px;}
+      .dash-card-hdr{flex-direction:column;align-items:flex-start;gap:6px;}
+      .stat-card{padding:12px 12px 10px;}
+      .panel{padding:10px;}
+      body{font-size:12px;}
+      .ac-input{width:100%;}
+    }
+    /* Wider comparison search */
+    .cmp-slot{min-width:260px;max-width:380px;}
+    .ac-input{min-width:220px;width:100%;}
+    .ac-drop{min-width:320px;right:auto;}
+    .ac-opt-name{white-space:normal;word-break:break-word;line-height:1.4;}
+    .ac-opt{align-items:flex-start;padding:9px 12px;}
   </style>
 </head>
 <body>
@@ -360,7 +405,14 @@
 <!-- ══════ DASHBOARD PANEL ══════ -->
 <div class="panel" id="dashPanel">
   <div class="dash-stats">
-    <div class="stat-card gold"><div class="stat-lbl">Total Sale Qty</div><div class="stat-val" id="dTot">—</div><div class="stat-sub">All cumulative</div></div>
+    <div class="stat-card gold" style="position:relative;">
+      <div class="stat-lbl">Total Sale Qty</div>
+      <div class="stat-val" id="dTot">—</div>
+      <div class="stat-sub">All cumulative</div>
+      <button id="dashDelBtn" onclick="openDashDeleteModal()" title="Delete records by date"
+        style="position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#f87171;border-radius:7px;padding:4px 9px;font-size:.62rem;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;display:none;"
+        onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">🗑 Delete</button>
+    </div>
     <div class="stat-card blue"><div class="stat-lbl">My Brands Qty</div><div class="stat-val" id="dMy">—</div><div class="stat-sub">John Martin &amp; Silver</div></div>
     <div class="stat-card purple"><div class="stat-lbl">Competitor Qty</div><div class="stat-val" id="dComp">—</div><div class="stat-sub">Other brands</div></div>
     <div class="stat-card green"><div class="stat-lbl">My Brand SKUs</div><div class="stat-val" id="dProd">—</div><div class="stat-sub">Products tracked</div></div>
@@ -444,16 +496,62 @@
 
 <div class="toast" id="toast"><span id="tIcon">✓</span><span id="tMsg"></span></div>
 
-<!-- DELETE MODAL -->
+<!-- DELETE MODAL (Admin) -->
 <div class="modal-ov" id="deleteModal">
   <div class="modal-box">
     <div class="modal-icon">🔐</div>
     <div class="modal-title">Confirm Secure Delete</div>
-    <div class="modal-sub" id="deleteModalSub">Enter the 4-digit security PIN to permanently delete all records for this date.</div>
-    <input class="modal-pin" id="modalPinInput" type="password" maxlength="4" placeholder="• • • •" autocomplete="off"/>
+    <div class="modal-sub" id="deleteModalSub">Enter the security password to permanently delete all records for this date.</div>
+    <input class="modal-pin" id="modalPinInput" type="password" maxlength="10" placeholder="Password" autocomplete="off" style="letter-spacing:2px;"/>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
       <button class="btn btn-red" onclick="confirmDelete()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD DELETE MODAL -->
+<div class="modal-ov" id="dashDeleteModal">
+  <div class="modal-box">
+    <div class="modal-icon">🗑</div>
+    <div class="modal-title">Delete Date Records</div>
+    <div class="modal-sub">Select a date to delete all records for that date from the dashboard.</div>
+    <div style="margin-bottom:14px;">
+      <select id="dashDelDateSel" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Mulish',sans-serif;font-size:.82rem;padding:8px 12px;border-radius:8px;outline:none;width:100%;">
+        <option value="">— Select Date —</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeDashDeleteModal()">Cancel</button>
+      <button class="btn btn-red" onclick="dashDeleteStep2()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD DELETE CONFIRM MODAL -->
+<div class="modal-ov" id="dashDeleteConfirmModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Are You Sure?</div>
+    <div class="modal-sub" id="dashDeleteConfirmSub">This will permanently delete all records for the selected date. This action cannot be undone.</div>
+    <div class="modal-actions" style="margin-bottom:14px;">
+      <button class="btn btn-ghost" onclick="closeDashDeleteConfirmModal()">No, Cancel</button>
+      <button class="btn btn-red" onclick="dashDeleteStep3()">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD DELETE PASSWORD MODAL -->
+<div class="modal-ov" id="dashDeletePwModal">
+  <div class="modal-box">
+    <div class="modal-icon">🔐</div>
+    <div class="modal-title">Enter Security Password</div>
+    <div class="modal-sub">Enter the password to authorise deletion.</div>
+    <input class="modal-pin" id="dashDelPwInput" type="password" maxlength="10" placeholder="Password" autocomplete="off" style="letter-spacing:2px;"/>
+    <div id="dashDelPwErr" style="color:#f87171;font-size:.74rem;margin-bottom:8px;display:none;">❌ Incorrect password. Deletion cancelled.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeDashDeletePwModal()">Cancel</button>
+      <button class="btn btn-red" onclick="dashDeleteExecute()">🗑 Confirm Delete</button>
     </div>
   </div>
 </div>
@@ -462,7 +560,7 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ─── CONFIG ────────────────────────────────────────
-const DELETE_PIN='1234'; // ← Change this to your secret PIN
+const DELETE_PIN='63'; // ← Secret PIN for deletion
 
 const MY_BRAND_KEYS=['john martin premium whisky 180','john martin premium whisky 750','john martin premium whisky 2','john martin secret malt','silvers deluxe whisky','silver deluxe whisky','silvers special reserve','silver special reserve'];
 const VALID_SIZES=/\b(180|375|750|1000|2000|500|350|90)\s*m?l?\b|\b[12]\s*l\b/i;
@@ -673,16 +771,35 @@ function exportAdminCSV(){if(!adminRec.length){toast('No data','err');return;}co
 // ─── FIREBASE STATUS ───────────────────────────────
 function setFbStatus(type,msg){const el=document.getElementById('fbStatus');el.className='fb-status '+type;el.textContent='🔥 '+msg;if(type!=='saving')setTimeout(()=>{el.className='fb-status ok';el.textContent='🔥 Connected';},3000);}
 
-// ─── SECURE DELETE ─────────────────────────────────
+// ─── SECURE DELETE (Admin Panel) ───────────────────
 async function populateDelDates(){
   if(!window.fbReady)return;
-  try{const snap=await window._fbGet(window._fbCol(window._fbDb,'whisky_sales_v2'));const dates=[...new Set(snap.docs.map(d=>d.data().date))].sort().reverse();const sel=document.getElementById('delDateSel');sel.innerHTML='<option value="">— pick date —</option>'+dates.map(d=>`<option value="${d}">${fmtD(d)} (${d})</option>`).join('');}catch(e){}
+  try{
+    const snap=await window._fbGet(window._fbCol(window._fbDb,'whisky_sales_v2'));
+    const dates=[...new Set(snap.docs.map(d=>d.data().date))].sort().reverse();
+    const sel=document.getElementById('delDateSel');
+    sel.innerHTML='<option value="">— pick date —</option>'+dates.map(d=>`<option value="${d}">${fmtD(d)} (${d})</option>`).join('');
+    // Also populate dashboard delete dropdown
+    const dsel=document.getElementById('dashDelDateSel');
+    if(dsel)dsel.innerHTML='<option value="">— Select Date —</option>'+dates.map(d=>`<option value="${d}">${fmtD(d)}</option>`).join('');
+    // Show/hide dashboard delete button
+    const btn=document.getElementById('dashDelBtn');
+    if(btn)btn.style.display=dates.length>0?'block':'none';
+  }catch(e){}
 }
-function openDeleteModal(){const sel=document.getElementById('delDateSel');if(!sel.value){toast('Select a date first','err');return;}pendingDelDate=sel.value;document.getElementById('deleteModalSub').textContent=`Enter the 4-digit security PIN to permanently delete ALL records for ${fmtD(pendingDelDate)}. This cannot be undone.`;document.getElementById('modalPinInput').value='';document.getElementById('deleteModal').classList.add('open');setTimeout(()=>document.getElementById('modalPinInput').focus(),120);}
+function openDeleteModal(){
+  const sel=document.getElementById('delDateSel');
+  if(!sel.value){toast('Select a date first','err');return;}
+  pendingDelDate=sel.value;
+  document.getElementById('deleteModalSub').textContent=`Enter the security password to permanently delete ALL records for ${fmtD(pendingDelDate)}. This cannot be undone.`;
+  document.getElementById('modalPinInput').value='';
+  document.getElementById('deleteModal').classList.add('open');
+  setTimeout(()=>document.getElementById('modalPinInput').focus(),120);
+}
 function closeDeleteModal(){document.getElementById('deleteModal').classList.remove('open');pendingDelDate='';}
 async function confirmDelete(){
   const pin=document.getElementById('modalPinInput').value;
-  if(pin!==DELETE_PIN){toast('❌ Incorrect PIN','err');document.getElementById('modalPinInput').value='';return;}
+  if(pin!==DELETE_PIN){toast('❌ Incorrect password — deletion cancelled','err');document.getElementById('modalPinInput').value='';return;}
   if(!pendingDelDate)return;
   closeDeleteModal();setFbStatus('saving','Deleting…');
   try{
@@ -690,6 +807,52 @@ async function confirmDelete(){
     let del=0;
     for(const d of snap.docs){if(d.data().date===pendingDelDate){await window._fbDel(d.ref);del++;}}
     setFbStatus('ok',`${del} deleted`);toast(`🗑 ${del} records for ${fmtD(pendingDelDate)} deleted`,'ok');
+    loadDashboardFromFirebase();populateDelDates();
+  }catch(e){setFbStatus('err','Error');toast('Delete error: '+e.message,'err');}
+}
+
+// ─── DASHBOARD DELETE (with double confirmation) ───
+let _dashPendingDelDate='';
+function openDashDeleteModal(){
+  const sel=document.getElementById('dashDelDateSel');
+  sel.value='';
+  document.getElementById('dashDeleteModal').classList.add('open');
+}
+function closeDashDeleteModal(){document.getElementById('dashDeleteModal').classList.remove('open');}
+function dashDeleteStep2(){
+  const sel=document.getElementById('dashDelDateSel');
+  if(!sel.value){toast('Please select a date first','err');return;}
+  _dashPendingDelDate=sel.value;
+  closeDashDeleteModal();
+  document.getElementById('dashDeleteConfirmSub').textContent=`Are you sure you want to delete ALL records for ${fmtD(_dashPendingDelDate)}? This cannot be undone.`;
+  document.getElementById('dashDeleteConfirmModal').classList.add('open');
+}
+function closeDashDeleteConfirmModal(){document.getElementById('dashDeleteConfirmModal').classList.remove('open');_dashPendingDelDate='';}
+function dashDeleteStep3(){
+  document.getElementById('dashDeleteConfirmModal').classList.remove('open');
+  document.getElementById('dashDelPwInput').value='';
+  document.getElementById('dashDelPwErr').style.display='none';
+  document.getElementById('dashDeletePwModal').classList.add('open');
+  setTimeout(()=>document.getElementById('dashDelPwInput').focus(),120);
+}
+function closeDashDeletePwModal(){document.getElementById('dashDeletePwModal').classList.remove('open');_dashPendingDelDate='';}
+async function dashDeleteExecute(){
+  const pw=document.getElementById('dashDelPwInput').value;
+  if(pw!==DELETE_PIN){
+    document.getElementById('dashDelPwErr').style.display='block';
+    document.getElementById('dashDelPwInput').value='';
+    setTimeout(()=>closeDashDeletePwModal(),2200);
+    return;
+  }
+  if(!_dashPendingDelDate)return;
+  closeDashDeletePwModal();setFbStatus('saving','Deleting…');
+  try{
+    const snap=await window._fbGet(window._fbCol(window._fbDb,'whisky_sales_v2'));
+    let del=0;
+    for(const d of snap.docs){if(d.data().date===_dashPendingDelDate){await window._fbDel(d.ref);del++;}}
+    setFbStatus('ok',`${del} deleted`);
+    toast(`🗑 ${del} records for ${fmtD(_dashPendingDelDate)} deleted`,'ok');
+    _dashPendingDelDate='';
     loadDashboardFromFirebase();populateDelDates();
   }catch(e){setFbStatus('err','Error');toast('Delete error: '+e.message,'err');}
 }
@@ -710,7 +873,13 @@ async function loadDashboardFromFirebase(){
 
 // ─── DASHBOARD RENDER ──────────────────────────────
 function renderDashboard(){
-  if(!dashRec.length){document.getElementById('dashNoData').style.display='block';document.getElementById('dashContent').style.display='none';['dTot','dMy','dComp','dProd','dDays'].forEach(id=>document.getElementById(id).textContent='—');return;}
+  if(!dashRec.length){
+    document.getElementById('dashNoData').style.display='block';
+    document.getElementById('dashContent').style.display='none';
+    ['dTot','dMy','dComp','dProd','dDays'].forEach(id=>document.getElementById(id).textContent='—');
+    const btn=document.getElementById('dashDelBtn');if(btn)btn.style.display='none';
+    return;
+  }
   document.getElementById('dashNoData').style.display='none';document.getElementById('dashContent').style.display='block';
   const myRec=dashRec.filter(r=>r.isMyBrand);
   const totAll=dashRec.reduce((s,r)=>s+r.saleQty,0);const totMy=myRec.reduce((s,r)=>s+r.saleQty,0);
