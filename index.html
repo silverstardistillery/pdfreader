@@ -10,12 +10,32 @@
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
     const app = initializeApp({ apiKey:"AIzaSyB6TowdmRPkpYRWBXLew70zeekyOjW0o5c", authDomain:"pdfreader-55af4.firebaseapp.com", projectId:"pdfreader-55af4", storageBucket:"pdfreader-55af4.firebasestorage.app", messagingSenderId:"968950783380", appId:"1:968950783380:web:927e6a6c93d9151d3c8381" });
     const db = getFirestore(app);
-    window._fbDb=db; window._fbCol=collection; window._fbAdd=addDoc; window._fbGet=getDocs;
-    window._fbDoc=doc; window._fbSet=setDoc; window._fbDel=deleteDoc;
-    window.fbReady=true; window.dispatchEvent(new Event('fbready'));
+    window._fbDb  = db;
+    window._fbCol = collection;
+    window._fbAdd = addDoc;
+    window._fbGet = getDocs;
+    window._fbDoc = doc;
+    window._fbSet = setDoc;
+    // Wrap deleteDoc in a closure so it retains its module scope
+    window._fbDel = (docRef) => deleteDoc(docRef);
+    // Helper: delete all docs in a collection where field === value
+    window._fbDelWhere = async (colRef, field, value) => {
+      const q = query(colRef, where(field, '==', value));
+      const snap = await getDocs(q);
+      console.log(`[Firebase Delete] query matched ${snap.size} docs for ${field}==${value}`);
+      const promises = snap.docs.map(d => {
+        console.log(`[Firebase Delete] deleting doc id: ${d.id}`);
+        return deleteDoc(d.ref);
+      });
+      await Promise.all(promises);
+      console.log(`[Firebase Delete] done — ${snap.size} docs deleted`);
+      return snap.size;
+    };
+    window.fbReady = true;
+    window.dispatchEvent(new Event('fbready'));
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -801,14 +821,23 @@ async function confirmDelete(){
   const pin=document.getElementById('modalPinInput').value;
   if(pin!==DELETE_PIN){toast('❌ Incorrect password — deletion cancelled','err');document.getElementById('modalPinInput').value='';return;}
   if(!pendingDelDate)return;
-  closeDeleteModal();setFbStatus('saving','Deleting…');
+  if(!window.fbReady){toast('Firebase not ready','err');return;}
+  closeDeleteModal();
+  setFbStatus('saving','Deleting…');
   try{
-    const snap=await window._fbGet(window._fbCol(window._fbDb,'whisky_sales_v2'));
-    let del=0;
-    for(const d of snap.docs){if(d.data().date===pendingDelDate){await window._fbDel(d.ref);del++;}}
-    setFbStatus('ok',`${del} deleted`);toast(`🗑 ${del} records for ${fmtD(pendingDelDate)} deleted`,'ok');
-    loadDashboardFromFirebase();populateDelDates();
-  }catch(e){setFbStatus('err','Error');toast('Delete error: '+e.message,'err');}
+    console.log('[Delete] Targeting date:', pendingDelDate);
+    const colRef = window._fbCol(window._fbDb, 'whisky_sales_v2');
+    const del = await window._fbDelWhere(colRef, 'date', pendingDelDate);
+    if(del===0){toast('⚠ No records found for that date','warn');}
+    else{toast(`🗑 ${del} record(s) for ${fmtD(pendingDelDate)} permanently deleted from Firebase`,'ok');}
+    setFbStatus('ok',`${del} deleted`);
+    await loadDashboardFromFirebase();
+    await populateDelDates();
+  }catch(e){
+    console.error('[Delete Error]',e);
+    setFbStatus('err','Error');
+    toast('Delete error: '+e.message,'err');
+  }
 }
 
 // ─── DASHBOARD DELETE (with double confirmation) ───
@@ -844,17 +873,26 @@ async function dashDeleteExecute(){
     setTimeout(()=>closeDashDeletePwModal(),2200);
     return;
   }
-  if(!_dashPendingDelDate)return;
-  closeDashDeletePwModal();setFbStatus('saving','Deleting…');
+  if(!_dashPendingDelDate){toast('No date selected','err');return;}
+  if(!window.fbReady){toast('Firebase not ready','err');return;}
+  const dateToDelete=_dashPendingDelDate;
+  closeDashDeletePwModal();
+  setFbStatus('saving','Deleting…');
   try{
-    const snap=await window._fbGet(window._fbCol(window._fbDb,'whisky_sales_v2'));
-    let del=0;
-    for(const d of snap.docs){if(d.data().date===_dashPendingDelDate){await window._fbDel(d.ref);del++;}}
+    console.log('[Dashboard Delete] Targeting date:', dateToDelete);
+    const colRef = window._fbCol(window._fbDb, 'whisky_sales_v2');
+    const del = await window._fbDelWhere(colRef, 'date', dateToDelete);
+    if(del===0){toast('⚠ No records found for that date','warn');}
+    else{toast(`🗑 ${del} record(s) for ${fmtD(dateToDelete)} permanently deleted from Firebase`,'ok');}
     setFbStatus('ok',`${del} deleted`);
-    toast(`🗑 ${del} records for ${fmtD(_dashPendingDelDate)} deleted`,'ok');
     _dashPendingDelDate='';
-    loadDashboardFromFirebase();populateDelDates();
-  }catch(e){setFbStatus('err','Error');toast('Delete error: '+e.message,'err');}
+    await loadDashboardFromFirebase();
+    await populateDelDates();
+  }catch(e){
+    console.error('[Dashboard Delete Error]',e);
+    setFbStatus('err','Error');
+    toast('Delete error: '+e.message,'err');
+  }
 }
 
 // ─── LOAD DASHBOARD ────────────────────────────────
