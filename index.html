@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
@@ -11,9 +12,9 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-    const app = initializeApp({ apiKey:"AIzaSyB6TowdmRPkpYRWBXLew70zeekyOjW0o5c", authDomain:"pdfreader-55af4.firebaseapp.com", projectId:"pdfreader-55af4", storageBucket:"pdfreader-55af4.firebasestorage.app", messagingSenderId:"968950783380", appId:"1:968950783380:web:927e6a6c93d9151d3c8381" });
+    const app = initializeApp({ apiKey: "AIzaSyB6TowdmRPkpYRWBXLew70zeekyOjW0o5c", authDomain: "pdfreader-55af4.firebaseapp.com", projectId: "pdfreader-55af4", storageBucket: "pdfreader-55af4.firebasestorage.app", messagingSenderId: "968950783380", appId: "1:968950783380:web:927e6a6c93d9151d3c8381" });
     const db = getFirestore(app);
-    window._fbDb  = db;
+    window._fbDb = db;
     window._fbCol = collection;
     window._fbAdd = addDoc;
     window._fbGet = getDocs;
@@ -37,964 +38,2612 @@
     window.fbReady = true;
     window.dispatchEvent(new Event('fbready'));
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Mulish:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    :root{--bg:#0d0f14;--surface:#141720;--surface2:#1c2030;--surface3:#242840;--border:#2a2f45;--border2:#363c58;--gold:#c9942a;--gold2:#f0b840;--gold-glow:rgba(201,148,42,0.14);--blue:#2563eb;--blue2:#3b82f6;--blue-glow:rgba(37,99,235,0.14);--green:#10b981;--green-glow:rgba(16,185,129,0.12);--red:#ef4444;--red-glow:rgba(239,68,68,0.12);--amber:#f59e0b;--purple:#7c5cfc;--text:#e8eaf2;--text2:#9aa3bf;--text3:#5a6380;}
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'Mulish',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
+    :root {
+      --bg: #0d0f14;
+      --surface: #141720;
+      --surface2: #1c2030;
+      --surface3: #242840;
+      --border: #2a2f45;
+      --border2: #363c58;
+      --gold: #c9942a;
+      --gold2: #f0b840;
+      --gold-glow: rgba(201, 148, 42, 0.14);
+      --blue: #2563eb;
+      --blue2: #3b82f6;
+      --blue-glow: rgba(37, 99, 235, 0.14);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.12);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.12);
+      --amber: #f59e0b;
+      --purple: #7c5cfc;
+      --text: #e8eaf2;
+      --text2: #9aa3bf;
+      --text3: #5a6380;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Mulish', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
     /* NAV */
-    .topnav{background:var(--surface);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200;}
-    .nav-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .nav-badge{font-size:0.58rem;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--gold-glow);color:var(--gold2);border:1px solid rgba(201,148,42,0.3);}
-    .nav-brand{display:flex;align-items:center;gap:12px;}
-    .nav-tabs{display:flex;background:var(--surface2);border-radius:10px;padding:3px;gap:2px;border:1px solid var(--border);}
-    .nav-tab{padding:7px 20px;border-radius:7px;font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text3);transition:all 0.25s;}
-    .nav-tab:hover{color:var(--text2);}
-    .nav-tab.active{background:var(--surface3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.3);}
-    .nav-tab.active.admin{color:var(--gold2);}
-    .nav-tab.active.dash{color:var(--blue2);}
-    .nav-right{display:flex;align-items:center;gap:10px;}
-    .fb-status{font-size:0.65rem;font-family:'JetBrains Mono',monospace;padding:4px 12px;border-radius:20px;background:var(--surface2);color:var(--text3);border:1px solid var(--border);transition:all 0.4s;}
-    .fb-status.ok{background:var(--green-glow);color:var(--green);border-color:rgba(16,185,129,0.3);}
-    .fb-status.err{background:var(--red-glow);color:var(--red);}
-    .fb-status.saving{background:var(--blue-glow);color:var(--blue2);animation:pulse 1s infinite;}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    .topnav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-badge {
+      font-size: 0.58rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--gold-glow);
+      color: var(--gold2);
+      border: 1px solid rgba(201, 148, 42, 0.3);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+      border: 1px solid var(--border);
+    }
+
+    .nav-tab {
+      padding: 7px 20px;
+      border-radius: 7px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text3);
+      transition: all 0.25s;
+    }
+
+    .nav-tab:hover {
+      color: var(--text2);
+    }
+
+    .nav-tab.active {
+      background: var(--surface3);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-tab.active.admin {
+      color: var(--gold2);
+    }
+
+    .nav-tab.active.dash {
+      color: var(--blue2);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .fb-status {
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--surface2);
+      color: var(--text3);
+      border: 1px solid var(--border);
+      transition: all 0.4s;
+    }
+
+    .fb-status.ok {
+      background: var(--green-glow);
+      color: var(--green);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .fb-status.err {
+      background: var(--red-glow);
+      color: var(--red);
+    }
+
+    .fb-status.saving {
+      background: var(--blue-glow);
+      color: var(--blue2);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .5
+      }
+    }
+
     /* PANELS */
-    .panel{display:none;padding:24px;}
-    .panel.active{display:block;}
+    .panel {
+      display: none;
+      padding: 24px;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
     /* BUTTONS */
-    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-family:'Syne',sans-serif;font-size:0.76rem;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;}
-    .btn-ghost{background:var(--surface2);border-color:var(--border);color:var(--text2);}
-    .btn-ghost:hover{border-color:var(--border2);color:var(--text);}
-    .btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a0d00;}
-    .btn-blue{background:var(--blue);color:#fff;}
-    .btn-blue:hover{background:var(--blue2);}
-    .btn-green{background:var(--green);color:#fff;}
-    .btn-green:hover{filter:brightness(1.1);}
-    .btn-red{background:var(--red);color:#fff;}
-    .btn-amber{background:var(--amber);color:#1a0d00;}
-    .btn-lg{padding:10px 24px;font-size:0.84rem;}
-    .btn:disabled{opacity:.4;cursor:not-allowed;}
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      border-color: var(--border);
+      color: var(--text2);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--border2);
+      color: var(--text);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #1a0d00;
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-blue:hover {
+      background: var(--blue2);
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-red {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn-amber {
+      background: var(--amber);
+      color: #1a0d00;
+    }
+
+    .btn-lg {
+      padding: 10px 24px;
+      font-size: 0.84rem;
+    }
+
+    .btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
     /* ADMIN LAYOUT */
-    .admin-layout{display:grid;grid-template-columns:310px 1fr;gap:20px;}
-    .upload-sidebar{display:flex;flex-direction:column;gap:14px;}
-    .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-    .sidebar-card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px;user-select:none;}
-    .sidebar-card-body{padding:14px 16px;}
-    .upload-zone{background:var(--surface2);border:2px dashed var(--border2);border-radius:10px;padding:22px 16px;text-align:center;cursor:pointer;transition:all .25s;}
-    .upload-zone:hover,.upload-zone.over{border-color:var(--gold);background:var(--gold-glow);}
-    .up-icon{font-size:1.8rem;margin-bottom:8px;}
-    .up-title{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;margin-bottom:4px;}
-    .up-sub{font-size:.7rem;color:var(--text3);margin-bottom:10px;line-height:1.5;}
-    #fileInput{display:none;}
-    .up-btn{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a0d00;font-family:'Syne',sans-serif;font-size:.76rem;font-weight:700;padding:7px 18px;border-radius:7px;cursor:pointer;border:none;}
-    .prog-wrap{display:none;margin-top:10px;}
-    .prog-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
-    .prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0%;transition:width .4s;}
-    .prog-lbl{margin-top:5px;font-size:.65rem;color:var(--text3);font-family:'JetBrains Mono',monospace;}
-    .wf-steps{display:flex;flex-direction:column;gap:5px;}
-    .wf-step{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);transition:all .3s;}
-    .wf-step.active{border-color:var(--gold);background:var(--gold-glow);}
-    .wf-step.done{border-color:var(--green);background:var(--green-glow);}
-    .wf-num{width:20px;height:20px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.63rem;font-weight:600;color:var(--text3);flex-shrink:0;}
-    .wf-step.active .wf-num{background:var(--gold);color:#1a0d00;border-color:var(--gold);}
-    .wf-step.done .wf-num{background:var(--green);color:#fff;}
-    .wf-lbl{font-size:.74rem;font-weight:600;color:var(--text3);}
-    .wf-step.active .wf-lbl{color:var(--gold2);}
-    .wf-step.done .wf-lbl{color:var(--green);}
-    .log-box{background:#070a0f;border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:#4ade80;max-height:100px;overflow-y:auto;display:none;}
-    .log-box.vis{display:block;}
-    .lw{color:#fbbf24;} .le{color:#f87171;}
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 310px 1fr;
+      gap: 20px;
+    }
+
+    .upload-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sidebar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .sidebar-card-hdr {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .sidebar-card-body {
+      padding: 14px 16px;
+    }
+
+    .upload-zone {
+      background: var(--surface2);
+      border: 2px dashed var(--border2);
+      border-radius: 10px;
+      padding: 22px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .25s;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.over {
+      border-color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    .up-icon {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .up-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .85rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .up-sub {
+      font-size: .7rem;
+      color: var(--text3);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .up-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #1a0d00;
+      font-family: 'Syne', sans-serif;
+      font-size: .76rem;
+      font-weight: 700;
+      padding: 7px 18px;
+      border-radius: 7px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .prog-wrap {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .prog-track {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+      width: 0%;
+      transition: width .4s;
+    }
+
+    .prog-lbl {
+      margin-top: 5px;
+      font-size: .65rem;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .wf-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .wf-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 11px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      transition: all .3s;
+    }
+
+    .wf-step.active {
+      border-color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    .wf-step.done {
+      border-color: var(--green);
+      background: var(--green-glow);
+    }
+
+    .wf-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .63rem;
+      font-weight: 600;
+      color: var(--text3);
+      flex-shrink: 0;
+    }
+
+    .wf-step.active .wf-num {
+      background: var(--gold);
+      color: #1a0d00;
+      border-color: var(--gold);
+    }
+
+    .wf-step.done .wf-num {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .wf-lbl {
+      font-size: .74rem;
+      font-weight: 600;
+      color: var(--text3);
+    }
+
+    .wf-step.active .wf-lbl {
+      color: var(--gold2);
+    }
+
+    .wf-step.done .wf-lbl {
+      color: var(--green);
+    }
+
+    .log-box {
+      background: #070a0f;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      color: #4ade80;
+      max-height: 100px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .log-box.vis {
+      display: block;
+    }
+
+    .lw {
+      color: #fbbf24;
+    }
+
+    .le {
+      color: #f87171;
+    }
+
     /* PREVIEW */
-    .preview-area{display:flex;flex-direction:column;gap:14px;}
-    .preview-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-    .preview-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-    .preview-title{font-family:'Syne',sans-serif;font-size:.84rem;font-weight:700;}
-    .preview-meta{font-size:.65rem;color:var(--text3);font-family:'JetBrains Mono',monospace;}
-    .preview-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+    .preview-area {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .preview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .preview-hdr {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preview-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    .preview-meta {
+      font-size: .65rem;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .preview-actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     /* EDITABLE TABLE */
-    .edit-tbl-wrap{overflow:auto;max-height:50vh;}
-    .edit-tbl{width:100%;border-collapse:collapse;font-size:.75rem;min-width:680px;}
-    .edit-tbl th{background:var(--surface3);color:var(--text2);padding:7px 9px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:.61rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;border-bottom:1px solid var(--border);}
-    .edit-tbl td{padding:5px 7px;border-bottom:1px solid var(--border);}
-    .edit-tbl tbody tr:hover td{background:rgba(255,255,255,.02);}
-    .my-row td:first-child{border-left:2px solid var(--gold);}
-    .edit-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Mulish',sans-serif;font-size:.75rem;padding:5px 8px;border-radius:6px;width:100%;outline:none;transition:border-color .2s;}
-    .edit-input:focus{border-color:var(--blue2);}
-    .edit-qty{font-family:'JetBrains Mono',monospace;text-align:right;max-width:85px;border-color:var(--border);}
-    .edit-qty:focus{border-color:var(--gold);}
-    .del-row-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;padding:4px 5px;border-radius:4px;transition:all .2s;}
-    .del-row-btn:hover{color:var(--red);background:var(--red-glow);}
-    .badge-my{background:var(--gold-glow);color:var(--gold2);border:1px solid rgba(201,148,42,.3);font-size:.58rem;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
-    .badge-comp{background:var(--surface3);color:var(--text3);border:1px solid var(--border);font-size:.58rem;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace;}
-    .badge-warn{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);font-size:.58rem;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace;}
-    .add-dash-wrap{background:linear-gradient(135deg,rgba(37,99,235,.09),rgba(37,99,235,.03));border:1px solid rgba(37,99,235,.3);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;}
-    .add-dash-info .title{font-family:'Syne',sans-serif;font-size:.84rem;font-weight:700;}
-    .add-dash-info .sub{font-size:.7rem;color:var(--text3);margin-top:3px;}
+    .edit-tbl-wrap {
+      overflow: auto;
+      max-height: 50vh;
+    }
+
+    .edit-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .75rem;
+      min-width: 680px;
+    }
+
+    .edit-tbl th {
+      background: var(--surface3);
+      color: var(--text2);
+      padding: 7px 9px;
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .61rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .edit-tbl td {
+      padding: 5px 7px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .edit-tbl tbody tr:hover td {
+      background: rgba(255, 255, 255, .02);
+    }
+
+    .my-row td:first-child {
+      border-left: 2px solid var(--gold);
+    }
+
+    .edit-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Mulish', sans-serif;
+      font-size: .75rem;
+      padding: 5px 8px;
+      border-radius: 6px;
+      width: 100%;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .edit-input:focus {
+      border-color: var(--blue2);
+    }
+
+    .edit-qty {
+      font-family: 'JetBrains Mono', monospace;
+      text-align: right;
+      max-width: 85px;
+      border-color: var(--border);
+    }
+
+    .edit-qty:focus {
+      border-color: var(--gold);
+    }
+
+    .del-row-btn {
+      background: transparent;
+      border: none;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: .85rem;
+      padding: 4px 5px;
+      border-radius: 4px;
+      transition: all .2s;
+    }
+
+    .del-row-btn:hover {
+      color: var(--red);
+      background: var(--red-glow);
+    }
+
+    .badge-my {
+      background: var(--gold-glow);
+      color: var(--gold2);
+      border: 1px solid rgba(201, 148, 42, .3);
+      font-size: .58rem;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+
+    .badge-comp {
+      background: var(--surface3);
+      color: var(--text3);
+      border: 1px solid var(--border);
+      font-size: .58rem;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-warn {
+      background: rgba(245, 158, 11, .15);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, .3);
+      font-size: .58rem;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .add-dash-wrap {
+      background: linear-gradient(135deg, rgba(37, 99, 235, .09), rgba(37, 99, 235, .03));
+      border: 1px solid rgba(37, 99, 235, .3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .add-dash-info .title {
+      font-family: 'Syne', sans-serif;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    .add-dash-info .sub {
+      font-size: .7rem;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+
     /* EMPTY */
-    .empty-state{text-align:center;padding:50px 20px;}
-    .empty-icon{font-size:2.6rem;opacity:.16;margin-bottom:10px;}
-    .empty-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;color:var(--text3);margin-bottom:4px;}
-    .empty-sub{font-size:.72rem;color:var(--text3);}
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+    }
+
+    .empty-icon {
+      font-size: 2.6rem;
+      opacity: .16;
+      margin-bottom: 10px;
+    }
+
+    .empty-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+
+    .empty-sub {
+      font-size: .72rem;
+      color: var(--text3);
+    }
+
     /* DASHBOARD STATS */
-    .dash-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
-    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 16px 14px;position:relative;overflow:hidden;}
-    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-    .stat-card.gold::before{background:linear-gradient(90deg,var(--gold),var(--gold2));}
-    .stat-card.blue::before{background:linear-gradient(90deg,var(--blue),var(--blue2));}
-    .stat-card.green::before{background:linear-gradient(90deg,var(--green),#34d399);}
-    .stat-card.purple::before{background:linear-gradient(90deg,var(--purple),#a78bfa);}
-    .stat-card.red::before{background:linear-gradient(90deg,var(--red),#f87171);}
-    .stat-lbl{font-size:.59rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);margin-bottom:9px;font-family:'Syne',sans-serif;font-weight:700;}
-    .stat-val{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:600;line-height:1;margin-bottom:3px;}
-    .stat-card.gold .stat-val{color:var(--gold2);}
-    .stat-card.blue .stat-val{color:var(--blue2);}
-    .stat-card.green .stat-val{color:var(--green);}
-    .stat-card.purple .stat-val{color:#a78bfa;}
-    .stat-card.red .stat-val{color:#f87171;}
-    .stat-sub{font-size:.65rem;color:var(--text3);}
-    .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
-    .dash-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-    .dash-card.full{grid-column:1/-1;}
-    .dash-card-hdr{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-    .dash-card-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:7px;}
-    .dash-card-meta{font-size:.65rem;color:var(--text3);font-family:'JetBrains Mono',monospace;}
-    .dash-card-body{padding:16px 18px;}
-    .brands-tbl{width:100%;border-collapse:collapse;font-size:.76rem;}
-    .brands-tbl th{padding:7px 9px;text-align:left;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.61rem;text-transform:uppercase;color:var(--text3);background:var(--surface2);}
-    .brands-tbl td{padding:8px 9px;border-bottom:1px solid var(--border);color:var(--text2);}
-    .brands-tbl tbody tr:hover td{background:var(--surface2);}
-    .qty-cell{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--gold2);text-align:right;}
-    .rank-cell{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text3);text-align:center;}
-    .bar-mini{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));margin-top:3px;}
+    .dash-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 16px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+
+    .stat-card.gold::before {
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+    }
+
+    .stat-card.blue::before {
+      background: linear-gradient(90deg, var(--blue), var(--blue2));
+    }
+
+    .stat-card.green::before {
+      background: linear-gradient(90deg, var(--green), #34d399);
+    }
+
+    .stat-card.purple::before {
+      background: linear-gradient(90deg, var(--purple), #a78bfa);
+    }
+
+    .stat-card.red::before {
+      background: linear-gradient(90deg, var(--red), #f87171);
+    }
+
+    .stat-lbl {
+      font-size: .59rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text3);
+      margin-bottom: 9px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+    }
+
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 600;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    .stat-card.gold .stat-val {
+      color: var(--gold2);
+    }
+
+    .stat-card.blue .stat-val {
+      color: var(--blue2);
+    }
+
+    .stat-card.green .stat-val {
+      color: var(--green);
+    }
+
+    .stat-card.purple .stat-val {
+      color: #a78bfa;
+    }
+
+    .stat-card.red .stat-val {
+      color: #f87171;
+    }
+
+    .stat-sub {
+      font-size: .65rem;
+      color: var(--text3);
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .dash-card.full {
+      grid-column: 1/-1;
+    }
+
+    .dash-card-hdr {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dash-card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dash-card-meta {
+      font-size: .65rem;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dash-card-body {
+      padding: 16px 18px;
+    }
+
+    .brands-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .76rem;
+    }
+
+    .brands-tbl th {
+      padding: 7px 9px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .61rem;
+      text-transform: uppercase;
+      color: var(--text3);
+      background: var(--surface2);
+    }
+
+    .brands-tbl td {
+      padding: 8px 9px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text2);
+    }
+
+    .brands-tbl tbody tr:hover td {
+      background: var(--surface2);
+    }
+
+    .qty-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--gold2);
+      text-align: right;
+    }
+
+    .rank-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      color: var(--text3);
+      text-align: center;
+    }
+
+    .bar-mini {
+      height: 5px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+      margin-top: 3px;
+    }
+
     /* COMPARISON - AUTOCOMPLETE */
-    .compare-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:visible;margin-bottom:18px;}
-    .compare-hdr{background:linear-gradient(135deg,var(--surface2),var(--surface3));padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;border-radius:14px 14px 0 0;}
-    .compare-controls{padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);}
-    .cmp-slots-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:12px;}
-    .cmp-slot{position:relative;display:flex;flex-direction:column;gap:4px;min-width:195px;max-width:260px;}
-    .cmp-slot-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:700;font-family:'Syne',sans-serif;}
-    .cmp-remove{position:absolute;top:-7px;right:-7px;width:17px;height:17px;background:var(--red);color:#fff;border:none;border-radius:50%;font-size:.62rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;}
+    .compare-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: visible;
+      margin-bottom: 18px;
+    }
+
+    .compare-hdr {
+      background: linear-gradient(135deg, var(--surface2), var(--surface3));
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .compare-controls {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .cmp-slots-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .cmp-slot {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 195px;
+      max-width: 260px;
+    }
+
+    .cmp-slot-lbl {
+      font-size: .58rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text3);
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .cmp-remove {
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      width: 17px;
+      height: 17px;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: .62rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+
     /* AC COMPONENT */
-    .ac-wrap{position:relative;}
-    .ac-input{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Mulish',sans-serif;font-size:.77rem;padding:8px 30px 8px 30px;border-radius:8px;width:100%;outline:none;transition:border-color .2s;}
-    .ac-input:focus{border-color:var(--blue2);}
-    .ac-search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--text3);pointer-events:none;}
-    .ac-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:.75rem;padding:2px 4px;display:none;line-height:1;}
-    .ac-x.show{display:block;}
-    .ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;z-index:9999;max-height:210px;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.55);display:none;}
-    .ac-drop.open{display:block;}
-    .ac-opt{padding:8px 12px;cursor:pointer;font-size:.77rem;color:var(--text2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;transition:background .12s;}
-    .ac-opt:last-child{border-bottom:none;}
-    .ac-opt:hover,.ac-opt.hi{background:var(--surface3);color:var(--text);}
-    .ac-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-    .ac-opt-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    .ac-opt-qty{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text3);flex-shrink:0;}
-    .ac-none{padding:10px 12px;font-size:.74rem;color:var(--text3);text-align:center;}
-    .ac-chip{margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--green);display:none;}
-    .ac-chip.show{display:block;}
-    .compare-actions{display:flex;gap:8px;flex-wrap:wrap;}
-    .compare-body{padding:18px;display:none;}
-    .compare-body.vis{display:block;}
+    .ac-wrap {
+      position: relative;
+    }
+
+    .ac-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Mulish', sans-serif;
+      font-size: .77rem;
+      padding: 8px 30px 8px 30px;
+      border-radius: 8px;
+      width: 100%;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .ac-input:focus {
+      border-color: var(--blue2);
+    }
+
+    .ac-search-icon {
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: .78rem;
+      color: var(--text3);
+      pointer-events: none;
+    }
+
+    .ac-x {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: .75rem;
+      padding: 2px 4px;
+      display: none;
+      line-height: 1;
+    }
+
+    .ac-x.show {
+      display: block;
+    }
+
+    .ac-drop {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      z-index: 9999;
+      max-height: 210px;
+      overflow-y: auto;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .55);
+      display: none;
+    }
+
+    .ac-drop.open {
+      display: block;
+    }
+
+    .ac-opt {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: .77rem;
+      color: var(--text2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .12s;
+    }
+
+    .ac-opt:last-child {
+      border-bottom: none;
+    }
+
+    .ac-opt:hover,
+    .ac-opt.hi {
+      background: var(--surface3);
+      color: var(--text);
+    }
+
+    .ac-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .ac-opt-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ac-opt-qty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      color: var(--text3);
+      flex-shrink: 0;
+    }
+
+    .ac-none {
+      padding: 10px 12px;
+      font-size: .74rem;
+      color: var(--text3);
+      text-align: center;
+    }
+
+    .ac-chip {
+      margin-top: 3px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .62rem;
+      color: var(--green);
+      display: none;
+    }
+
+    .ac-chip.show {
+      display: block;
+    }
+
+    .compare-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .compare-body {
+      padding: 18px;
+      display: none;
+    }
+
+    .compare-body.vis {
+      display: block;
+    }
+
     /* PIVOT */
-    .pivot-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:18px;}
-    .tbl-scroll{overflow:auto;max-height:55vh;}
-    .ptbl{width:100%;border-collapse:collapse;font-size:.75rem;min-width:max-content;}
-    .ptbl thead th{position:sticky;top:0;z-index:10;background:var(--surface3);color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:.61rem;font-weight:600;padding:8px 9px;text-align:center;white-space:nowrap;border-right:1px solid var(--border);border-bottom:1px solid var(--border2);}
-    .ptbl thead th.dh{text-align:left;min-width:90px;position:sticky;left:0;z-index:11;background:#1a1e2d;}
-    .ptbl thead th.mbh{background:#2d1f00;color:var(--gold2);}
-    .ptbl thead th.toth{background:#0e1a35;color:var(--blue2);}
-    .ptbl tbody tr:hover td{background:var(--surface2)!important;}
-    .ptbl td{padding:7px 9px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;color:var(--text2);}
-    .dc{position:sticky;left:0;background:var(--surface)!important;text-align:left;font-family:'Mulish',sans-serif;font-weight:600;color:var(--text);z-index:2;padding:7px 12px;border-right:1px solid var(--border2)!important;white-space:nowrap;}
-    .hv{color:var(--text);font-weight:600;}.zv{color:var(--text3);opacity:.3;}
-    .mbc{background:rgba(201,148,42,.07)!important;}.mbc.hv{color:var(--gold2);}
-    .totc{font-weight:700;color:var(--blue2);background:var(--blue-glow)!important;}
-    .trow td{background:#0e1530!important;color:var(--blue2)!important;font-weight:700;}
-    .trow .dc{background:#0a1028!important;color:var(--text2)!important;font-family:'Syne',sans-serif;font-size:.68rem;letter-spacing:1px;}
-    .trow .mbc{background:rgba(201,148,42,.15)!important;color:var(--gold2)!important;}
-    .date-nav{display:flex;gap:7px;flex-wrap:wrap;padding:11px 18px;background:var(--surface2);border-bottom:1px solid var(--border);}
-    .date-chip{padding:5px 12px;border-radius:20px;font-size:.68rem;font-family:'JetBrains Mono',monospace;background:var(--surface3);color:var(--text3);border:1px solid var(--border);cursor:pointer;transition:all .2s;}
-    .date-chip:hover{border-color:var(--blue2);color:var(--blue2);}
-    .date-chip.active{background:var(--blue-glow);border-color:var(--blue2);color:var(--blue2);}
-    .legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 18px 0;align-items:center;}
-    .leg-item{display:flex;align-items:center;gap:6px;font-size:.69rem;color:var(--text3);}
-    .leg-dot{width:8px;height:8px;border-radius:2px;}
+    .pivot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .tbl-scroll {
+      overflow: auto;
+      max-height: 55vh;
+    }
+
+    .ptbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .75rem;
+      min-width: max-content;
+    }
+
+    .ptbl thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--surface3);
+      color: var(--text2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .61rem;
+      font-weight: 600;
+      padding: 8px 9px;
+      text-align: center;
+      white-space: nowrap;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .ptbl thead th.dh {
+      text-align: left;
+      min-width: 90px;
+      position: sticky;
+      left: 0;
+      z-index: 11;
+      background: #1a1e2d;
+    }
+
+    .ptbl thead th.mbh {
+      background: #2d1f00;
+      color: var(--gold2);
+    }
+
+    .ptbl thead th.toth {
+      background: #0e1a35;
+      color: var(--blue2);
+    }
+
+    .ptbl tbody tr:hover td {
+      background: var(--surface2) !important;
+    }
+
+    .ptbl td {
+      padding: 7px 9px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text2);
+    }
+
+    .dc {
+      position: sticky;
+      left: 0;
+      background: var(--surface) !important;
+      text-align: left;
+      font-family: 'Mulish', sans-serif;
+      font-weight: 600;
+      color: var(--text);
+      z-index: 2;
+      padding: 7px 12px;
+      border-right: 1px solid var(--border2) !important;
+      white-space: nowrap;
+    }
+
+    .hv {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .zv {
+      color: var(--text3);
+      opacity: .3;
+    }
+
+    .mbc {
+      background: rgba(201, 148, 42, .07) !important;
+    }
+
+    .mbc.hv {
+      color: var(--gold2);
+    }
+
+    .totc {
+      font-weight: 700;
+      color: var(--blue2);
+      background: var(--blue-glow) !important;
+    }
+
+    .trow td {
+      background: #0e1530 !important;
+      color: var(--blue2) !important;
+      font-weight: 700;
+    }
+
+    .trow .dc {
+      background: #0a1028 !important;
+      color: var(--text2) !important;
+      font-family: 'Syne', sans-serif;
+      font-size: .68rem;
+      letter-spacing: 1px;
+    }
+
+    .trow .mbc {
+      background: rgba(201, 148, 42, .15) !important;
+      color: var(--gold2) !important;
+    }
+
+    .date-nav {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      padding: 11px 18px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .date-chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: .68rem;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--surface3);
+      color: var(--text3);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .date-chip:hover {
+      border-color: var(--blue2);
+      color: var(--blue2);
+    }
+
+    .date-chip.active {
+      background: var(--blue-glow);
+      border-color: var(--blue2);
+      color: var(--blue2);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 10px 18px 0;
+      align-items: center;
+    }
+
+    .leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .69rem;
+      color: var(--text3);
+    }
+
+    .leg-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
     /* DELETE */
-    .del-zone{background:var(--surface2);border:1px dashed rgba(239,68,68,.3);border-radius:9px;padding:12px 14px;}
-    .del-zone-title{font-size:.7rem;font-weight:700;color:var(--red);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
-    .del-row{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;}
-    .del-sel{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Mulish',sans-serif;font-size:.77rem;padding:7px 10px;border-radius:7px;outline:none;transition:border-color .2s;}
-    .del-sel:focus{border-color:var(--red);}
+    .del-zone {
+      background: var(--surface2);
+      border: 1px dashed rgba(239, 68, 68, .3);
+      border-radius: 9px;
+      padding: 12px 14px;
+    }
+
+    .del-zone-title {
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--red);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .del-row {
+      display: flex;
+      gap: 9px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .del-sel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Mulish', sans-serif;
+      font-size: .77rem;
+      padding: 7px 10px;
+      border-radius: 7px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .del-sel:focus {
+      border-color: var(--red);
+    }
+
     /* CMP TABLE */
-    .cmp-tbl{width:100%;border-collapse:collapse;font-size:.75rem;margin-top:14px;}
-    .cmp-tbl th{background:var(--surface3);color:var(--text2);padding:7px 9px;text-align:center;font-size:.61rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;border-bottom:1px solid var(--border);}
-    .cmp-tbl th:first-child{text-align:left;}
-    .cmp-tbl td{padding:7px 9px;border-bottom:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;color:var(--text2);}
-    .cmp-tbl td:first-child{text-align:left;font-family:'Mulish',sans-serif;color:var(--text);}
-    .cmp-tbl tbody tr:hover td{background:var(--surface2);}
-    .winner{color:var(--green)!important;font-weight:700!important;}
-    .no-data-dash{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;text-align:center;gap:10px;}
-    .no-data-icon{font-size:2.8rem;opacity:.12;}
-    .no-data-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--text3);}
-    .no-data-sub{font-size:.76rem;color:var(--text3);max-width:320px;line-height:1.6;}
+    .cmp-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .75rem;
+      margin-top: 14px;
+    }
+
+    .cmp-tbl th {
+      background: var(--surface3);
+      color: var(--text2);
+      padding: 7px 9px;
+      text-align: center;
+      font-size: .61rem;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmp-tbl th:first-child {
+      text-align: left;
+    }
+
+    .cmp-tbl td {
+      padding: 7px 9px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text2);
+    }
+
+    .cmp-tbl td:first-child {
+      text-align: left;
+      font-family: 'Mulish', sans-serif;
+      color: var(--text);
+    }
+
+    .cmp-tbl tbody tr:hover td {
+      background: var(--surface2);
+    }
+
+    .winner {
+      color: var(--green) !important;
+      font-weight: 700 !important;
+    }
+
+    .no-data-dash {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 24px;
+      text-align: center;
+      gap: 10px;
+    }
+
+    .no-data-icon {
+      font-size: 2.8rem;
+      opacity: .12;
+    }
+
+    .no-data-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text3);
+    }
+
+    .no-data-sub {
+      font-size: .76rem;
+      color: var(--text3);
+      max-width: 320px;
+      line-height: 1.6;
+    }
+
     /* TOAST */
-    .toast{position:fixed;bottom:22px;right:22px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:.78rem;display:flex;align-items:center;gap:9px;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);z-index:9999;box-shadow:0 8px 28px rgba(0,0,0,.4);max-width:330px;}
-    .toast.show{transform:translateY(0);opacity:1;}
-    .toast.ok{background:#0d2b1e;border-color:rgba(16,185,129,.4);color:var(--green);}
-    .toast.err{background:#2b0d0d;border-color:rgba(239,68,68,.4);color:var(--red);}
-    .toast.warn{background:#2b1d0d;border-color:rgba(245,158,11,.4);color:var(--amber);}
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: .78rem;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      transform: translateY(60px);
+      opacity: 0;
+      transition: all .3s cubic-bezier(.4, 0, .2, 1);
+      z-index: 9999;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .4);
+      max-width: 330px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.ok {
+      background: #0d2b1e;
+      border-color: rgba(16, 185, 129, .4);
+      color: var(--green);
+    }
+
+    .toast.err {
+      background: #2b0d0d;
+      border-color: rgba(239, 68, 68, .4);
+      color: var(--red);
+    }
+
+    .toast.warn {
+      background: #2b1d0d;
+      border-color: rgba(245, 158, 11, .4);
+      color: var(--amber);
+    }
+
     /* MODAL */
-    .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;display:none;align-items:center;justify-content:center;}
-    .modal-ov.open{display:flex;}
-    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 30px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);}
-    .modal-icon{font-size:2.2rem;margin-bottom:12px;}
-    .modal-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:7px;}
-    .modal-sub{font-size:.78rem;color:var(--text3);margin-bottom:18px;line-height:1.6;}
-    .modal-pin{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:1.1rem;padding:10px 14px;border-radius:8px;outline:none;text-align:center;letter-spacing:6px;width:150px;margin-bottom:14px;display:block;margin:0 auto 14px;}
-    .modal-pin:focus{border-color:var(--red);}
-    .modal-actions{display:flex;gap:10px;justify-content:center;}
-    ::-webkit-scrollbar{width:5px;height:5px;}
-    ::-webkit-scrollbar-track{background:var(--surface);}
-    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+    .modal-ov {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .78);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-ov.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 30px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+    }
+
+    .modal-icon {
+      font-size: 2.2rem;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .modal-sub {
+      font-size: .78rem;
+      color: var(--text3);
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+
+    .modal-pin {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      outline: none;
+      text-align: center;
+      letter-spacing: 6px;
+      width: 150px;
+      margin-bottom: 14px;
+      display: block;
+      margin: 0 auto 14px;
+    }
+
+    .modal-pin:focus {
+      border-color: var(--red);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 3px;
+    }
 
     /* ── MOBILE RESPONSIVE ── */
-    @media(max-width:900px){
-      .admin-layout{grid-template-columns:1fr;}
-      .dash-stats{grid-template-columns:repeat(2,1fr);}
-      .dash-grid{grid-template-columns:1fr;}
-      .topnav{flex-wrap:wrap;height:auto;padding:10px 14px;gap:8px;}
-      .nav-tabs{order:3;width:100%;justify-content:center;}
-      .nav-right{order:2;}
-      .panel{padding:14px;}
-      .preview-hdr{flex-direction:column;align-items:flex-start;}
-      .compare-hdr{flex-direction:column;gap:6px;}
-      .cmp-slot{min-width:100%;max-width:100%;}
-      .cmp-slots-row{flex-direction:column;}
-      .ac-input{font-size:.85rem;}
-      .ac-drop{min-width:280px;}
-      .edit-tbl-wrap{max-height:40vh;}
-      .tbl-scroll{max-height:45vh;}
-      .dash-card.full{grid-column:1;}
-      .brands-tbl{font-size:.7rem;}
-      .stat-val{font-size:1.2rem;}
-      .date-nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
-      .date-chip{white-space:nowrap;}
-      .pivot-card{overflow:hidden;}
-      .modal-box{padding:20px 16px;}
+    @media(max-width:900px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .dash-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topnav {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 10px 14px;
+        gap: 8px;
+      }
+
+      .nav-tabs {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .nav-right {
+        order: 2;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .preview-hdr {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .compare-hdr {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .cmp-slot {
+        min-width: 100%;
+        max-width: 100%;
+      }
+
+      .cmp-slots-row {
+        flex-direction: column;
+      }
+
+      .ac-input {
+        font-size: .85rem;
+      }
+
+      .ac-drop {
+        min-width: 280px;
+      }
+
+      .edit-tbl-wrap {
+        max-height: 40vh;
+      }
+
+      .tbl-scroll {
+        max-height: 45vh;
+      }
+
+      .dash-card.full {
+        grid-column: 1;
+      }
+
+      .brands-tbl {
+        font-size: .7rem;
+      }
+
+      .stat-val {
+        font-size: 1.2rem;
+      }
+
+      .date-nav {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .date-chip {
+        white-space: nowrap;
+      }
+
+      .pivot-card {
+        overflow: hidden;
+      }
+
+      .modal-box {
+        padding: 20px 16px;
+      }
     }
-    @media(max-width:480px){
-      .dash-stats{grid-template-columns:1fr 1fr;}
-      .topnav{padding:8px 10px;}
-      .nav-logo{font-size:.95rem;}
-      .btn{padding:6px 10px;font-size:.72rem;}
-      .compare-actions{flex-direction:column;gap:6px;}
-      .preview-actions{flex-wrap:wrap;gap:5px;}
-      .dash-card-hdr{flex-direction:column;align-items:flex-start;gap:6px;}
-      .stat-card{padding:12px 12px 10px;}
-      .panel{padding:10px;}
-      body{font-size:12px;}
-      .ac-input{width:100%;}
+
+    @media(max-width:480px) {
+      .dash-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .topnav {
+        padding: 8px 10px;
+      }
+
+      .nav-logo {
+        font-size: .95rem;
+      }
+
+      .btn {
+        padding: 6px 10px;
+        font-size: .72rem;
+      }
+
+      .compare-actions {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .preview-actions {
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      .dash-card-hdr {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      .stat-card {
+        padding: 12px 12px 10px;
+      }
+
+      .panel {
+        padding: 10px;
+      }
+
+      body {
+        font-size: 12px;
+      }
+
+      .ac-input {
+        width: 100%;
+      }
     }
+
+    /* ── MONTH SELECTOR ── */
+    .month-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, var(--surface2), var(--surface));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 18px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .month-bar-label {
+      font-family: 'Syne', sans-serif;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .month-sel-wrap {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex: 1;
+      align-items: center;
+    }
+
+    .month-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: .69rem;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--surface3);
+      color: var(--text3);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .month-chip:hover {
+      border-color: var(--purple);
+      color: #a78bfa;
+    }
+
+    .month-chip.active {
+      background: rgba(124, 92, 252, 0.18);
+      border-color: var(--purple);
+      color: #a78bfa;
+      font-weight: 700;
+    }
+
+    .month-info-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .62rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(124, 92, 252, 0.12);
+      border: 1px solid rgba(124, 92, 252, 0.3);
+      color: #a78bfa;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    @media(max-width:900px) {
+      .month-bar { gap: 8px; padding: 10px 12px; }
+      .month-sel-wrap { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+      .month-chip { white-space: nowrap; }
+      .month-info-badge { margin-left: 0; }
+    }
+
     /* Wider comparison search */
-    .cmp-slot{min-width:260px;max-width:380px;}
-    .ac-input{min-width:220px;width:100%;}
-    .ac-drop{min-width:320px;right:auto;}
-    .ac-opt-name{white-space:normal;word-break:break-word;line-height:1.4;}
-    .ac-opt{align-items:flex-start;padding:9px 12px;}
+    .cmp-slot {
+      min-width: 260px;
+      max-width: 380px;
+    }
+
+    .ac-input {
+      min-width: 220px;
+      width: 100%;
+    }
+
+    .ac-drop {
+      min-width: 320px;
+      right: auto;
+    }
+
+    .ac-opt-name {
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    .ac-opt {
+      align-items: flex-start;
+      padding: 9px 12px;
+    }
   </style>
 </head>
+
 <body>
 
-<div class="topnav">
-  <div class="nav-brand">
-    <div class="nav-logo">🥃 Whisky Intelligence</div>
-    <div class="nav-badge">v3 · Sales Platform</div>
+  <div class="topnav">
+    <div class="nav-brand">
+      <div class="nav-logo">🥃 Whisky Intelligence</div>
+      <div class="nav-badge">v3 · Sales Platform</div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab admin active" onclick="switchPanel('admin')">⚙ Admin Panel</button>
+      <button class="nav-tab dash" onclick="switchPanel('dash')">📊 Dashboard</button>
+    </div>
+    <div class="nav-right">
+      <span class="fb-status" id="fbStatus">🔥 Firebase</span>
+      <button class="btn btn-ghost" style="font-size:.7rem;padding:5px 12px;" onclick="loadDashboardFromFirebase()">↻
+        Sync</button>
+    </div>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab admin active" onclick="switchPanel('admin')">⚙ Admin Panel</button>
-    <button class="nav-tab dash" onclick="switchPanel('dash')">📊 Dashboard</button>
-  </div>
-  <div class="nav-right">
-    <span class="fb-status" id="fbStatus">🔥 Firebase</span>
-    <button class="btn btn-ghost" style="font-size:.7rem;padding:5px 12px;" onclick="loadDashboardFromFirebase()">↻ Sync</button>
-  </div>
-</div>
 
-<!-- ══════ ADMIN PANEL ══════ -->
-<div class="panel active" id="adminPanel">
-  <div class="admin-layout">
-    <div class="upload-sidebar">
+  <!-- ══════ ADMIN PANEL ══════ -->
+  <div class="panel active" id="adminPanel">
+    <div class="admin-layout">
+      <div class="upload-sidebar">
 
-      <div class="sidebar-card">
-        <div class="sidebar-card-hdr">📂 Upload PDF</div>
-        <div class="sidebar-card-body">
-          <input type="file" id="fileInput" accept=".pdf,.PDF"/>
-          <div class="upload-zone" id="upZone">
-            <div class="up-icon">📄</div>
-            <div class="up-title">Drop Sales PDF Here</div>
-            <div class="up-sub">Only <strong>Sale Quantity</strong> extracted<br>Stock &amp; Balance columns ignored</div>
-            <label for="fileInput" class="up-btn">Choose PDF File</label>
-            <div class="prog-wrap" id="pw"><div class="prog-track"><div class="prog-fill" id="pf"></div></div><div class="prog-lbl" id="pl"></div></div>
-          </div>
-          <div class="log-box" id="logEl"></div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-hdr">📋 Workflow</div>
-        <div class="sidebar-card-body">
-          <div class="wf-steps">
-            <div class="wf-step active" id="ws1"><div class="wf-num">1</div><div class="wf-lbl">Upload PDF</div></div>
-            <div class="wf-step" id="ws2"><div class="wf-num">2</div><div class="wf-lbl">Extract Data</div></div>
-            <div class="wf-step" id="ws3"><div class="wf-num">3</div><div class="wf-lbl">Edit &amp; Verify</div></div>
-            <div class="wf-step" id="ws4"><div class="wf-num">4</div><div class="wf-lbl">Add to Dashboard</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Triple-click "⭐ My Brands" header to reveal delete panel -->
-      <div class="sidebar-card">
-        <div class="sidebar-card-hdr" id="myBrandsHdr" style="cursor:pointer;" title="">⭐ My Brands</div>
-        <div class="sidebar-card-body" style="display:flex;flex-direction:column;gap:5px;">
-          <div style="font-size:.7rem;color:var(--gold2);">● John Martin Premium Whisky 180ml</div>
-          <div style="font-size:.7rem;color:var(--gold2);">● John Martin Premium Whisky 750ml PET</div>
-          <div style="font-size:.7rem;color:var(--gold2);">● John Martin Premium Whisky 2L</div>
-          <div style="font-size:.7rem;color:var(--gold2);">● John Martin Secret Malt</div>
-          <div style="font-size:.7rem;color:var(--gold2);">● Silver Deluxe Whisky</div>
-          <div style="font-size:.7rem;color:var(--gold2);">● Silver Special Reserve</div>
-          <div style="font-size:.7rem;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">Only these appear on Dashboard</div>
-        </div>
-      </div>
-
-      <!-- HIDDEN DELETE PANEL — revealed by triple-clicking "⭐ My Brands" header -->
-      <div class="sidebar-card" id="deleteCard" style="display:none;border-color:rgba(239,68,68,.3);">
-        <div class="sidebar-card-hdr" style="color:var(--red);">🔐 Secure Delete</div>
-        <div class="sidebar-card-body">
-          <div class="del-zone">
-            <div class="del-zone-title">⚠ Delete Records by Date</div>
-            <div class="del-row">
-              <div>
-                <div style="font-size:.59rem;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">Select Date</div>
-                <select class="del-sel" id="delDateSel"><option value="">— pick date —</option></select>
+        <div class="sidebar-card">
+          <div class="sidebar-card-hdr">📂 Upload PDF</div>
+          <div class="sidebar-card-body">
+            <input type="file" id="fileInput" accept=".pdf,.PDF" />
+            <div class="upload-zone" id="upZone">
+              <div class="up-icon">📄</div>
+              <div class="up-title">Drop Sales PDF Here</div>
+              <div class="up-sub">Only <strong>Sale Quantity</strong> extracted<br>Stock &amp; Balance columns ignored
               </div>
-              <button class="btn btn-red" style="padding:7px 14px;font-size:.74rem;" onclick="openDeleteModal()">🗑 Delete</button>
+              <label for="fileInput" class="up-btn">Choose PDF File</label>
+              <div class="prog-wrap" id="pw">
+                <div class="prog-track">
+                  <div class="prog-fill" id="pf"></div>
+                </div>
+                <div class="prog-lbl" id="pl"></div>
+              </div>
+            </div>
+            <div class="log-box" id="logEl"></div>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sidebar-card-hdr">📋 Workflow</div>
+          <div class="sidebar-card-body">
+            <div class="wf-steps">
+              <div class="wf-step active" id="ws1">
+                <div class="wf-num">1</div>
+                <div class="wf-lbl">Upload PDF</div>
+              </div>
+              <div class="wf-step" id="ws2">
+                <div class="wf-num">2</div>
+                <div class="wf-lbl">Extract Data</div>
+              </div>
+              <div class="wf-step" id="ws3">
+                <div class="wf-num">3</div>
+                <div class="wf-lbl">Edit &amp; Verify</div>
+              </div>
+              <div class="wf-step" id="ws4">
+                <div class="wf-num">4</div>
+                <div class="wf-lbl">Add to Dashboard</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-    </div><!-- /sidebar -->
-
-    <!-- EDITABLE PREVIEW -->
-    <div class="preview-area">
-      <div class="preview-card">
-        <div class="preview-hdr">
-          <div>
-            <div class="preview-title">📋 Extracted Data — Edit Before Saving</div>
-            <div class="preview-meta" id="previewMeta">—</div>
-          </div>
-          <div class="preview-actions">
-            <button class="btn btn-ghost" style="font-size:.72rem;" onclick="addBlankRow()">+ Add Row</button>
-            <button class="btn btn-ghost" style="font-size:.72rem;" onclick="clearAdminData()">🗑 Clear</button>
-            <button class="btn btn-ghost" style="font-size:.72rem;" onclick="exportAdminCSV()">⬇ CSV</button>
+        <!-- Triple-click "⭐ My Brands" header to reveal delete panel -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-hdr" id="myBrandsHdr" style="cursor:pointer;" title="">⭐ My Brands</div>
+          <div class="sidebar-card-body" style="display:flex;flex-direction:column;gap:5px;">
+            <div style="font-size:.7rem;color:var(--gold2);">● John Martin Premium Whisky 180ml</div>
+            <div style="font-size:.7rem;color:var(--gold2);">● John Martin Premium Whisky 750ml PET</div>
+            <div style="font-size:.7rem;color:var(--gold2);">● John Martin Premium Whisky 2L</div>
+            <div style="font-size:.7rem;color:var(--gold2);">● John Martin Secret Malt</div>
+            <div style="font-size:.7rem;color:var(--gold2);">● Silver Deluxe Whisky</div>
+            <div style="font-size:.7rem;color:var(--gold2);">● Silver Special Reserve</div>
+            <div
+              style="font-size:.7rem;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+              Only these appear on Dashboard</div>
           </div>
         </div>
-        <div class="edit-tbl-wrap" id="editTblWrap">
+
+        <!-- HIDDEN DELETE PANEL — revealed by triple-clicking "⭐ My Brands" header -->
+        <div class="sidebar-card" id="deleteCard" style="display:none;border-color:rgba(239,68,68,.3);">
+          <div class="sidebar-card-hdr" style="color:var(--red);">🔐 Secure Delete</div>
+          <div class="sidebar-card-body">
+            <div class="del-zone">
+              <div class="del-zone-title">⚠ Delete Records by Date</div>
+              <div class="del-row">
+                <div>
+                  <div
+                    style="font-size:.59rem;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">
+                    Select Date</div>
+                  <select class="del-sel" id="delDateSel">
+                    <option value="">— pick date —</option>
+                  </select>
+                </div>
+                <button class="btn btn-red" style="padding:7px 14px;font-size:.74rem;" onclick="openDeleteModal()">🗑
+                  Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sidebar -->
+
+      <!-- EDITABLE PREVIEW -->
+      <div class="preview-area">
+        <div class="preview-card">
+          <div class="preview-hdr">
+            <div>
+              <div class="preview-title">📋 Extracted Data — Edit Before Saving</div>
+              <div class="preview-meta" id="previewMeta">—</div>
+            </div>
+            <div class="preview-actions">
+              <button class="btn btn-ghost" style="font-size:.72rem;" onclick="addBlankRow()">+ Add Row</button>
+              <button class="btn btn-ghost" style="font-size:.72rem;" onclick="clearAdminData()">🗑 Clear</button>
+              <button class="btn btn-ghost" style="font-size:.72rem;" onclick="exportAdminCSV()">⬇ CSV</button>
+            </div>
+          </div>
+          <div class="edit-tbl-wrap" id="editTblWrap">
+            <div class="empty-state">
+              <div class="empty-icon">🥃</div>
+              <div class="empty-title">No data yet</div>
+              <div class="empty-sub">Upload a daily sales PDF to extract and review whisky quantities</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="addToDashCard" style="display:none;">
+          <div class="add-dash-wrap">
+            <div class="add-dash-info">
+              <div class="title">✅ Data Verified — Ready to Push</div>
+              <div class="sub" id="addToDashSub">Edit any row above, then click to save to Firebase.</div>
+            </div>
+            <button class="btn btn-green btn-lg" onclick="addToDashboard()" id="addToDashBtn">📊 Add to
+              Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ DASHBOARD PANEL ══════ -->
+  <div class="panel" id="dashPanel">
+
+    <!-- MONTH SELECTOR BAR -->
+    <div class="month-bar" id="monthBar">
+      <div class="month-bar-label">📅 Month</div>
+      <div class="month-sel-wrap" id="monthChipsWrap">
+        <!-- chips injected by JS -->
+      </div>
+      <div class="month-info-badge" id="monthInfoBadge">Loading…</div>
+    </div>
+
+    <div class="dash-stats">
+      <div class="stat-card gold" style="position:relative;">
+        <div class="stat-lbl">Total Sale Qty</div>
+        <div class="stat-val" id="dTot">—</div>
+        <div class="stat-sub">All cumulative</div>
+        <button id="dashDelBtn" onclick="openDashDeleteModal()" title="Delete records by date"
+          style="position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#f87171;border-radius:7px;padding:4px 9px;font-size:.62rem;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;display:none;"
+          onmouseover="this.style.background='rgba(239,68,68,0.3)'"
+          onmouseout="this.style.background='rgba(239,68,68,0.15)'">🗑 Delete</button>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-lbl">My Brands Qty</div>
+        <div class="stat-val" id="dMy">—</div>
+        <div class="stat-sub">John Martin &amp; Silver</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-lbl">Competitor Qty</div>
+        <div class="stat-val" id="dComp">—</div>
+        <div class="stat-sub">Other brands</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-lbl">My Brand SKUs</div>
+        <div class="stat-val" id="dProd">—</div>
+        <div class="stat-sub">Products tracked</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-lbl">Days Tracked</div>
+        <div class="stat-val" id="dDays">—</div>
+        <div class="stat-sub">Cumulative entries</div>
+      </div>
+    </div>
+
+    <div id="dashNoData" class="dash-card" style="margin-bottom:18px;">
+      <div class="no-data-dash">
+        <div class="no-data-icon">📊</div>
+        <div class="no-data-title">No Dashboard Data Yet</div>
+        <div class="no-data-sub">Go to Admin Panel → upload PDF → edit/verify → click <strong>"Add to
+            Dashboard"</strong></div>
+        <button class="btn btn-blue" style="margin-top:8px;" onclick="switchPanel('admin')">⚙ Go to Admin Panel</button>
+      </div>
+    </div>
+
+    <div id="dashContent" style="display:none;">
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="dash-card-hdr">
+            <div class="dash-card-title">⭐ My Brands Breakdown</div>
+            <div class="dash-card-meta" id="pieChartMeta">—</div>
+          </div>
+          <div class="dash-card-body">
+            <div id="pieChart"></div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-hdr">
+            <div class="dash-card-title">📈 Cumulative Growth</div>
+            <div class="dash-card-meta">My brands over time</div>
+          </div>
+          <div class="dash-card-body">
+            <div id="growthChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-card full" style="margin-bottom:18px;">
+        <div class="dash-card-hdr">
+          <div class="dash-card-title">⭐ My Brand Product Summary</div>
+          <div class="dash-card-meta" id="myBrandsMeta">—</div>
+        </div>
+        <div style="overflow:auto;max-height:280px;">
+          <table class="brands-tbl">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th style="text-align:right;">Total Qty</th>
+                <th style="text-align:right;">Share</th>
+                <th style="min-width:120px;">Bar</th>
+              </tr>
+            </thead>
+            <tbody id="myBrandsTbody">
+              <tr>
+                <td colspan="5" style="text-align:center;padding:24px;color:var(--text3);">No data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SEARCHABLE COMPARISON -->
+      <div class="compare-section">
+        <div class="compare-hdr">
+          <div class="dash-card-title">⚖ Flexible Product Comparison</div>
+          <span style="font-size:.69rem;color:var(--text3);">🔍 Search &amp; select any products — unlimited</span>
+        </div>
+        <div class="compare-controls">
+          <div class="cmp-slots-row" id="cmpSlotsRow"></div>
+          <div class="compare-actions">
+            <button class="btn btn-ghost" onclick="addCmpSlot()">+ Add Product</button>
+            <button class="btn btn-blue" onclick="runCompare()">⚖ Compare</button>
+            <button class="btn btn-ghost" onclick="clearCompare()">✕ Clear</button>
+          </div>
+        </div>
+        <div class="compare-body" id="compareBody">
+          <div id="cmpChart"></div>
+          <div id="cmpLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;"></div>
+          <div style="overflow:auto;">
+            <table class="cmp-tbl" id="cmpTable"></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PIVOT TABLE -->
+      <div class="pivot-card">
+        <div class="dash-card-hdr">
+          <div class="dash-card-title">📅 Date × Product Cumulative Table</div>
+          <div style="display:flex;align-items:center;gap:9px;">
+            <div class="dash-card-meta" id="pivotMeta">—</div>
+            <button class="btn btn-ghost" style="font-size:.67rem;padding:4px 9px;" onclick="exportDashCSV()">⬇
+              CSV</button>
+            <button class="btn btn-ghost" style="font-size:.67rem;padding:4px 9px;" onclick="exportDashPDF()">📄
+              PDF</button>
+          </div>
+        </div>
+        <div class="date-nav" id="dateNav">
+          <div class="date-chip all active" onclick="filterDashDate('')">All Dates</div>
+        </div>
+        <div class="legend">
+          <div class="leg-item">
+            <div class="leg-dot" style="background:var(--gold);"></div>⭐ My Brands
+          </div>
+          <div class="leg-item">
+            <div class="leg-dot" style="background:var(--surface3);border:1px solid var(--border2);"></div>Competitors
+          </div>
+        </div>
+        <div class="tbl-scroll" id="dashPivotScroll">
           <div class="empty-state">
-            <div class="empty-icon">🥃</div>
-            <div class="empty-title">No data yet</div>
-            <div class="empty-sub">Upload a daily sales PDF to extract and review whisky quantities</div>
+            <div class="empty-icon">📊</div>
+            <div class="empty-title">No data</div>
           </div>
         </div>
       </div>
-
-      <div id="addToDashCard" style="display:none;">
-        <div class="add-dash-wrap">
-          <div class="add-dash-info">
-            <div class="title">✅ Data Verified — Ready to Push</div>
-            <div class="sub" id="addToDashSub">Edit any row above, then click to save to Firebase.</div>
-          </div>
-          <button class="btn btn-green btn-lg" onclick="addToDashboard()" id="addToDashBtn">📊 Add to Dashboard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ DASHBOARD PANEL ══════ -->
-<div class="panel" id="dashPanel">
-  <div class="dash-stats">
-    <div class="stat-card gold" style="position:relative;">
-      <div class="stat-lbl">Total Sale Qty</div>
-      <div class="stat-val" id="dTot">—</div>
-      <div class="stat-sub">All cumulative</div>
-      <button id="dashDelBtn" onclick="openDashDeleteModal()" title="Delete records by date"
-        style="position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#f87171;border-radius:7px;padding:4px 9px;font-size:.62rem;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;display:none;"
-        onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">🗑 Delete</button>
-    </div>
-    <div class="stat-card blue"><div class="stat-lbl">My Brands Qty</div><div class="stat-val" id="dMy">—</div><div class="stat-sub">John Martin &amp; Silver</div></div>
-    <div class="stat-card purple"><div class="stat-lbl">Competitor Qty</div><div class="stat-val" id="dComp">—</div><div class="stat-sub">Other brands</div></div>
-    <div class="stat-card green"><div class="stat-lbl">My Brand SKUs</div><div class="stat-val" id="dProd">—</div><div class="stat-sub">Products tracked</div></div>
-    <div class="stat-card red"><div class="stat-lbl">Days Tracked</div><div class="stat-val" id="dDays">—</div><div class="stat-sub">Cumulative entries</div></div>
-  </div>
-
-  <div id="dashNoData" class="dash-card" style="margin-bottom:18px;">
-    <div class="no-data-dash">
-      <div class="no-data-icon">📊</div>
-      <div class="no-data-title">No Dashboard Data Yet</div>
-      <div class="no-data-sub">Go to Admin Panel → upload PDF → edit/verify → click <strong>"Add to Dashboard"</strong></div>
-      <button class="btn btn-blue" style="margin-top:8px;" onclick="switchPanel('admin')">⚙ Go to Admin Panel</button>
     </div>
   </div>
 
-  <div id="dashContent" style="display:none;">
-    <div class="dash-grid">
-      <div class="dash-card">
-        <div class="dash-card-hdr"><div class="dash-card-title">⭐ My Brands Breakdown</div><div class="dash-card-meta" id="pieChartMeta">—</div></div>
-        <div class="dash-card-body"><div id="pieChart"></div></div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-card-hdr"><div class="dash-card-title">📈 Cumulative Growth</div><div class="dash-card-meta">My brands over time</div></div>
-        <div class="dash-card-body"><div id="growthChart"></div></div>
-      </div>
-    </div>
+  <div class="toast" id="toast"><span id="tIcon">✓</span><span id="tMsg"></span></div>
 
-    <div class="dash-card full" style="margin-bottom:18px;">
-      <div class="dash-card-hdr">
-        <div class="dash-card-title">⭐ My Brand Product Summary</div>
-        <div class="dash-card-meta" id="myBrandsMeta">—</div>
+  <!-- DELETE MODAL (Admin) -->
+  <div class="modal-ov" id="deleteModal">
+    <div class="modal-box">
+      <div class="modal-icon">🔐</div>
+      <div class="modal-title">Confirm Secure Delete</div>
+      <div class="modal-sub" id="deleteModalSub">Enter the security password to permanently delete all records for this
+        date.</div>
+      <input class="modal-pin" id="modalPinInput" type="password" maxlength="10" placeholder="Password"
+        autocomplete="off" style="letter-spacing:2px;" />
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-red" onclick="confirmDelete()">🗑 Delete</button>
       </div>
-      <div style="overflow:auto;max-height:280px;">
-        <table class="brands-tbl">
-          <thead><tr><th>#</th><th>Product</th><th style="text-align:right;">Total Qty</th><th style="text-align:right;">Share</th><th style="min-width:120px;">Bar</th></tr></thead>
-          <tbody id="myBrandsTbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3);">No data</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- SEARCHABLE COMPARISON -->
-    <div class="compare-section">
-      <div class="compare-hdr">
-        <div class="dash-card-title">⚖ Flexible Product Comparison</div>
-        <span style="font-size:.69rem;color:var(--text3);">🔍 Search &amp; select any products — unlimited</span>
-      </div>
-      <div class="compare-controls">
-        <div class="cmp-slots-row" id="cmpSlotsRow"></div>
-        <div class="compare-actions">
-          <button class="btn btn-ghost" onclick="addCmpSlot()">+ Add Product</button>
-          <button class="btn btn-blue" onclick="runCompare()">⚖ Compare</button>
-          <button class="btn btn-ghost" onclick="clearCompare()">✕ Clear</button>
-        </div>
-      </div>
-      <div class="compare-body" id="compareBody">
-        <div id="cmpChart"></div>
-        <div id="cmpLegend" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;"></div>
-        <div style="overflow:auto;"><table class="cmp-tbl" id="cmpTable"></table></div>
-      </div>
-    </div>
-
-    <!-- PIVOT TABLE -->
-    <div class="pivot-card">
-      <div class="dash-card-hdr">
-        <div class="dash-card-title">📅 Date × Product Cumulative Table</div>
-        <div style="display:flex;align-items:center;gap:9px;">
-          <div class="dash-card-meta" id="pivotMeta">—</div>
-          <button class="btn btn-ghost" style="font-size:.67rem;padding:4px 9px;" onclick="exportDashCSV()">⬇ CSV</button>
-          <button class="btn btn-ghost" style="font-size:.67rem;padding:4px 9px;" onclick="exportDashPDF()">📄 PDF</button>
-        </div>
-      </div>
-      <div class="date-nav" id="dateNav"><div class="date-chip all active" onclick="filterDashDate('')">All Dates</div></div>
-      <div class="legend">
-        <div class="leg-item"><div class="leg-dot" style="background:var(--gold);"></div>⭐ My Brands</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--surface3);border:1px solid var(--border2);"></div>Competitors</div>
-      </div>
-      <div class="tbl-scroll" id="dashPivotScroll"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data</div></div></div>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"><span id="tIcon">✓</span><span id="tMsg"></span></div>
-
-<!-- DELETE MODAL (Admin) -->
-<div class="modal-ov" id="deleteModal">
-  <div class="modal-box">
-    <div class="modal-icon">🔐</div>
-    <div class="modal-title">Confirm Secure Delete</div>
-    <div class="modal-sub" id="deleteModalSub">Enter the security password to permanently delete all records for this date.</div>
-    <input class="modal-pin" id="modalPinInput" type="password" maxlength="10" placeholder="Password" autocomplete="off" style="letter-spacing:2px;"/>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
-      <button class="btn btn-red" onclick="confirmDelete()">🗑 Delete</button>
+  <!-- DASHBOARD DELETE MODAL -->
+  <div class="modal-ov" id="dashDeleteModal">
+    <div class="modal-box">
+      <div class="modal-icon">🗑</div>
+      <div class="modal-title">Delete Date Records</div>
+      <div class="modal-sub">Select a date to delete all records for that date from the dashboard.</div>
+      <div style="margin-bottom:14px;">
+        <select id="dashDelDateSel"
+          style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Mulish',sans-serif;font-size:.82rem;padding:8px 12px;border-radius:8px;outline:none;width:100%;">
+          <option value="">— Select Date —</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeDashDeleteModal()">Cancel</button>
+        <button class="btn btn-red" onclick="dashDeleteStep2()">🗑 Delete</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- DASHBOARD DELETE MODAL -->
-<div class="modal-ov" id="dashDeleteModal">
-  <div class="modal-box">
-    <div class="modal-icon">🗑</div>
-    <div class="modal-title">Delete Date Records</div>
-    <div class="modal-sub">Select a date to delete all records for that date from the dashboard.</div>
-    <div style="margin-bottom:14px;">
-      <select id="dashDelDateSel" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Mulish',sans-serif;font-size:.82rem;padding:8px 12px;border-radius:8px;outline:none;width:100%;">
-        <option value="">— Select Date —</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeDashDeleteModal()">Cancel</button>
-      <button class="btn btn-red" onclick="dashDeleteStep2()">🗑 Delete</button>
+  <!-- DASHBOARD DELETE CONFIRM MODAL -->
+  <div class="modal-ov" id="dashDeleteConfirmModal">
+    <div class="modal-box">
+      <div class="modal-icon">⚠️</div>
+      <div class="modal-title">Are You Sure?</div>
+      <div class="modal-sub" id="dashDeleteConfirmSub">This will permanently delete all records for the selected date.
+        This action cannot be undone.</div>
+      <div class="modal-actions" style="margin-bottom:14px;">
+        <button class="btn btn-ghost" onclick="closeDashDeleteConfirmModal()">No, Cancel</button>
+        <button class="btn btn-red" onclick="dashDeleteStep3()">Yes, Continue</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- DASHBOARD DELETE CONFIRM MODAL -->
-<div class="modal-ov" id="dashDeleteConfirmModal">
-  <div class="modal-box">
-    <div class="modal-icon">⚠️</div>
-    <div class="modal-title">Are You Sure?</div>
-    <div class="modal-sub" id="dashDeleteConfirmSub">This will permanently delete all records for the selected date. This action cannot be undone.</div>
-    <div class="modal-actions" style="margin-bottom:14px;">
-      <button class="btn btn-ghost" onclick="closeDashDeleteConfirmModal()">No, Cancel</button>
-      <button class="btn btn-red" onclick="dashDeleteStep3()">Yes, Continue</button>
+  <!-- DASHBOARD DELETE PASSWORD MODAL -->
+  <div class="modal-ov" id="dashDeletePwModal">
+    <div class="modal-box">
+      <div class="modal-icon">🔐</div>
+      <div class="modal-title">Enter Security Password</div>
+      <div class="modal-sub">Enter the password to authorise deletion.</div>
+      <input class="modal-pin" id="dashDelPwInput" type="password" maxlength="10" placeholder="Password"
+        autocomplete="off" style="letter-spacing:2px;" />
+      <div id="dashDelPwErr" style="color:#f87171;font-size:.74rem;margin-bottom:8px;display:none;">❌ Incorrect
+        password. Deletion cancelled.</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeDashDeletePwModal()">Cancel</button>
+        <button class="btn btn-red" onclick="dashDeleteExecute()">🗑 Confirm Delete</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- DASHBOARD DELETE PASSWORD MODAL -->
-<div class="modal-ov" id="dashDeletePwModal">
-  <div class="modal-box">
-    <div class="modal-icon">🔐</div>
-    <div class="modal-title">Enter Security Password</div>
-    <div class="modal-sub">Enter the password to authorise deletion.</div>
-    <input class="modal-pin" id="dashDelPwInput" type="password" maxlength="10" placeholder="Password" autocomplete="off" style="letter-spacing:2px;"/>
-    <div id="dashDelPwErr" style="color:#f87171;font-size:.74rem;margin-bottom:8px;display:none;">❌ Incorrect password. Deletion cancelled.</div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeDashDeletePwModal()">Cancel</button>
-      <button class="btn btn-red" onclick="dashDeleteExecute()">🗑 Confirm Delete</button>
-    </div>
-  </div>
-</div>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-<script>
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    // ─── CONFIG ────────────────────────────────────────
+    const DELETE_PIN = '63'; // ← Secret PIN for deletion
 
-// ─── CONFIG ────────────────────────────────────────
-const DELETE_PIN='63'; // ← Secret PIN for deletion
+    const MY_BRAND_KEYS = ['john martin premium whisky 180', 'john martin premium whisky 750', 'john martin premium whisky 2', 'john martin secret malt', 'silvers deluxe whisky', 'silver deluxe whisky', 'silvers special reserve', 'silver special reserve'];
+    const VALID_SIZES = /\b(180|375|750|1000|2000|500|350|90)\s*m?l?\b|\b[12]\s*l\b/i;
+    const WHISKY_RE = /whis[kk]e?y/i;
+    const SKIP_SET = new Set(['total', 'grand total', 'sub total', 'item name', 'item group', 'product', 's.no', 'sr.no', 'srno', 'serial no', 'opening', 'closing', 'in stock', 'stock qty', 'quantity in stock', 'balance', 'opening stock', 'closing stock', 'current stock', 'bal qty', 'qty in stock', 'balance qty', 'sale qty', 'sale quantity', 'item code', 'description', 'particulars', 'sl no', 'sl.no', 'no.', 'unit', 'rate', 'amount', 'name', 'brand', 'item']);
+    const SKIP_PRE = ['total ', 'grand ', 'balance ', 'opening ', 'closing ', 'stock '];
+    const isMyBrand = n => MY_BRAND_KEYS.some(k => n.toLowerCase().includes(k));
+    const isSkip = n => { const l = n.toLowerCase().trim(); if (SKIP_SET.has(l)) return true; if (SKIP_PRE.some(p => l.startsWith(p))) return true; if (/^\d+\.?$/.test(l)) return true; if (l.length < 7) return true; return false; };
+    const isValidProd = name => { const l = name.toLowerCase(); return MY_BRAND_KEYS.some(k => l.includes(k)) || WHISKY_RE.test(l); };
 
-const MY_BRAND_KEYS=['john martin premium whisky 180','john martin premium whisky 750','john martin premium whisky 2','john martin secret malt','silvers deluxe whisky','silver deluxe whisky','silvers special reserve','silver special reserve'];
-const VALID_SIZES=/\b(180|375|750|1000|2000|500|350|90)\s*m?l?\b|\b[12]\s*l\b/i;
-const WHISKY_RE=/whis[kk]e?y/i;
-const SKIP_SET=new Set(['total','grand total','sub total','item name','item group','product','s.no','sr.no','srno','serial no','opening','closing','in stock','stock qty','quantity in stock','balance','opening stock','closing stock','current stock','bal qty','qty in stock','balance qty','sale qty','sale quantity','item code','description','particulars','sl no','sl.no','no.','unit','rate','amount','name','brand','item']);
-const SKIP_PRE=['total ','grand ','balance ','opening ','closing ','stock '];
-const isMyBrand=n=>MY_BRAND_KEYS.some(k=>n.toLowerCase().includes(k));
-const isSkip=n=>{const l=n.toLowerCase().trim();if(SKIP_SET.has(l))return true;if(SKIP_PRE.some(p=>l.startsWith(p)))return true;if(/^\d+\.?$/.test(l))return true;if(l.length<7)return true;return false;};
-const isValidProd=name=>{const l=name.toLowerCase();return MY_BRAND_KEYS.some(k=>l.includes(k))||WHISKY_RE.test(l);};
+    // ─── STATE ─────────────────────────────────────────
+    let adminRec = []; // {id,date,product,saleQty,isMyBrand}
+    let dashRec = [];
+    let dashDateFilter = '';
+    let dashMonthFilter = ''; // NEW: "YYYY-MM" or '' for all
+    let cmpChartInst = null, pieChartInst = null, growthChartInst = null;
+    let acSlotCounter = 0;
+    let pendingDelDate = '';
 
-// ─── STATE ─────────────────────────────────────────
-let adminRec=[]; // {id,date,product,saleQty,isMyBrand}
-let dashRec=[];
-let dashDateFilter='';
-let cmpChartInst=null,pieChartInst=null,growthChartInst=null;
-let acSlotCounter=0;
-let pendingDelDate='';
-
-// ─── PANEL ─────────────────────────────────────────
-function switchPanel(name){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(name+'Panel').classList.add('active');
-  document.querySelector('.nav-tab.'+name).classList.add('active');
-  if(name==='dash')loadDashboardFromFirebase();
-}
-
-// ─── TRIPLE-CLICK REVEAL ───────────────────────────
-let _tclicks=0,_ttimer=null;
-document.getElementById('myBrandsHdr').addEventListener('click',()=>{
-  _tclicks++;clearTimeout(_ttimer);
-  _ttimer=setTimeout(()=>{_tclicks=0;},600);
-  if(_tclicks>=3){_tclicks=0;const c=document.getElementById('deleteCard');c.style.display=c.style.display==='none'?'block':'none';if(c.style.display==='block')toast('🔐 Secure delete unlocked','warn');}
-});
-
-// ─── UPLOAD ────────────────────────────────────────
-const upZone=document.getElementById('upZone'),fileInput=document.getElementById('fileInput');
-upZone.addEventListener('click',e=>{if(e.target.tagName==='LABEL'||e.target.closest('label'))return;fileInput.click();});
-upZone.addEventListener('dragover',e=>{e.preventDefault();upZone.classList.add('over');});
-upZone.addEventListener('dragleave',()=>upZone.classList.remove('over'));
-upZone.addEventListener('drop',e=>{e.preventDefault();upZone.classList.remove('over');const f=e.dataTransfer.files[0];if(f&&f.name.toLowerCase().endsWith('.pdf'))go(f);else toast('Please drop a valid PDF','err');});
-fileInput.addEventListener('change',e=>{if(e.target.files[0])go(e.target.files[0]);fileInput.value='';});
-
-function setWF(step){for(let i=1;i<=4;i++){const el=document.getElementById('ws'+i);el.classList.remove('active','done');if(i<step)el.classList.add('done');else if(i===step)el.classList.add('active');}}
-
-async function go(file){
-  prog(5,'Reading PDF…');clearLog();log('📄 '+file.name);toast('Processing: '+file.name);setWF(2);
-  try{
-    const buf=await file.arrayBuffer();prog(15,'Loading pages…');
-    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    log('📃 Pages: '+pdf.numPages);
-    let items=[];
-    for(let p=1;p<=pdf.numPages;p++){
-      const pg=await pdf.getPage(p);const c=await pg.getTextContent();
-      c.items.forEach(it=>{if(it.str.trim())items.push({s:it.str.trim(),x:Math.round(it.transform[4]),y:Math.round(it.transform[5]),pg:p});});
-      prog(15+Math.round(p/pdf.numPages*35),`Page ${p}/${pdf.numPages}`);
+    // ─── PANEL ─────────────────────────────────────────
+    function switchPanel(name) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(name + 'Panel').classList.add('active');
+      document.querySelector('.nav-tab.' + name).classList.add('active');
+      if (name === 'dash') loadDashboardFromFirebase();
     }
-    log('📝 Items: '+items.length);
-    prog(55,'Detecting structure…');
-    const rows=groupRows(items);log('📊 Rows: '+rows.length);
-    const records=extract(rows,file.name);
-    log('🥃 Valid records: '+records.length);
-    prog(90,'Building editable table…');
-    if(!records.length){prog(0);toast('No whisky Sale Qty found — check PDF format','err');log('⚠ Ensure PDF has "Sale Qty" or "Sale Quantity" column','w');setWF(1);return;}
-    let added=0,upd=0;
-    records.forEach(r=>{const ex=adminRec.find(x=>x.date===r.date&&x.product===r.product);if(ex){ex.saleQty+=r.saleQty;upd++;}else{adminRec.push({...r,id:uid()});added++;}});
-    log(`✅ Added:${added} Updated:${upd}`);
-    prog(100,'Done!');setTimeout(()=>prog(0),1500);
-    toast(`✅ ${records.length} records extracted!`,'ok');
-    setWF(3);renderEditTable();showAddToDash();
-  }catch(e){prog(0);toast('Error: '+e.message,'err');log('❌ '+e.message,'e');setWF(1);}
-}
 
-// ─── ROW GROUPER ───────────────────────────────────
-function groupRows(items){
-  const sorted=[...items].sort((a,b)=>{if(a.pg!==b.pg)return a.pg-b.pg;if(Math.abs(a.y-b.y)>4)return b.y-a.y;return a.x-b.x;});
-  const rows=[];let cur=[],ly=null,lp=null;
-  for(const it of sorted){if(ly===null||it.pg!==lp||Math.abs(it.y-ly)>4){if(cur.length)rows.push(cur);cur=[it];ly=it.y;lp=it.pg;}else cur.push(it);}
-  if(cur.length)rows.push(cur);
-  return rows;
-}
+    // ─── TRIPLE-CLICK REVEAL ───────────────────────────
+    let _tclicks = 0, _ttimer = null;
+    document.getElementById('myBrandsHdr').addEventListener('click', () => {
+      _tclicks++; clearTimeout(_ttimer);
+      _ttimer = setTimeout(() => { _tclicks = 0; }, 600);
+      if (_tclicks >= 3) { _tclicks = 0; const c = document.getElementById('deleteCard'); c.style.display = c.style.display === 'none' ? 'block' : 'none'; if (c.style.display === 'block') toast('🔐 Secure delete unlocked', 'warn'); }
+    });
 
-// ─── EXTRACTOR (strict v3) ─────────────────────────
-function extract(rows,filename){
-  const recs=[];let curDate=extractDateFromFilename(filename);
-  let saleX=null,stockX=null,balX=null,headerIdx=-1;
-  const TOL=42;
-  // Find header
-  for(let i=0;i<rows.length;i++){
-    const rt=rows[i].map(t=>t.s).join(' ').toLowerCase();
-    if(rt.includes('sale')&&(rt.includes('qty')||rt.includes('quantity'))){
-      headerIdx=i;
-      for(const t of rows[i]){
-        const s=t.s.toLowerCase();
-        if((s.includes('sale')&&(s.includes('qty')||s.includes('quan')))&&saleX===null)saleX=t.x;
-        if((s.includes('stock')||s.includes('opening')||s.includes('closing'))&&stockX===null)stockX=t.x;
-        if(s.includes('balance')&&balX===null)balX=t.x;
-      }
-      if(saleX===null){for(const t of rows[i]){if(t.s.toLowerCase().includes('sale')){saleX=t.x;break;}}}
-      log(`📐 SaleX=${saleX??'?'} StockX=${stockX??'?'} BalX=${balX??'?'}`);
-      break;
+    // ─── UPLOAD ────────────────────────────────────────
+    const upZone = document.getElementById('upZone'), fileInput = document.getElementById('fileInput');
+    upZone.addEventListener('click', e => { if (e.target.tagName === 'LABEL' || e.target.closest('label')) return; fileInput.click(); });
+    upZone.addEventListener('dragover', e => { e.preventDefault(); upZone.classList.add('over'); });
+    upZone.addEventListener('dragleave', () => upZone.classList.remove('over'));
+    upZone.addEventListener('drop', e => { e.preventDefault(); upZone.classList.remove('over'); const f = e.dataTransfer.files[0]; if (f && f.name.toLowerCase().endsWith('.pdf')) go(f); else toast('Please drop a valid PDF', 'err'); });
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) go(e.target.files[0]); fileInput.value = ''; });
+
+    function setWF(step) { for (let i = 1; i <= 4; i++) { const el = document.getElementById('ws' + i); el.classList.remove('active', 'done'); if (i < step) el.classList.add('done'); else if (i === step) el.classList.add('active'); } }
+
+    async function go(file) {
+      prog(5, 'Reading PDF…'); clearLog(); log('📄 ' + file.name); toast('Processing: ' + file.name); setWF(2);
+      try {
+        const buf = await file.arrayBuffer(); prog(15, 'Loading pages…');
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        log('📃 Pages: ' + pdf.numPages);
+        let items = [];
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const pg = await pdf.getPage(p); const c = await pg.getTextContent();
+          c.items.forEach(it => { if (it.str.trim()) items.push({ s: it.str.trim(), x: Math.round(it.transform[4]), y: Math.round(it.transform[5]), pg: p }); });
+          prog(15 + Math.round(p / pdf.numPages * 35), `Page ${p}/${pdf.numPages}`);
+        }
+        log('📝 Items: ' + items.length);
+        prog(55, 'Detecting structure…');
+        const rows = groupRows(items); log('📊 Rows: ' + rows.length);
+        const records = extract(rows, file.name);
+        log('🥃 Valid records: ' + records.length);
+        prog(90, 'Building editable table…');
+        if (!records.length) { prog(0); toast('No whisky Sale Qty found — check PDF format', 'err'); log('⚠ Ensure PDF has "Sale Qty" or "Sale Quantity" column', 'w'); setWF(1); return; }
+        let added = 0, upd = 0;
+        records.forEach(r => { const ex = adminRec.find(x => x.date === r.date && x.product === r.product); if (ex) { ex.saleQty += r.saleQty; upd++; } else { adminRec.push({ ...r, id: uid() }); added++; } });
+        log(`✅ Added:${added} Updated:${upd}`);
+        prog(100, 'Done!'); setTimeout(() => prog(0), 1500);
+        toast(`✅ ${records.length} records extracted!`, 'ok');
+        setWF(3); renderEditTable(); showAddToDash();
+      } catch (e) { prog(0); toast('Error: ' + e.message, 'err'); log('❌ ' + e.message, 'e'); setWF(1); }
     }
-  }
-  if(headerIdx<0)log('⚠ No "Sale Qty" header — using fallback mode','w');
 
-  for(let i=(headerIdx>=0?headerIdx+1:0);i<rows.length;i++){
-    const row=rows[i];const rt=row.map(t=>t.s).join(' ');
-    const dt=dateFromText(rt);if(dt){curDate=dt;continue;}
-    const nameToks=[],numToks=[];
-    for(const t of row){
-      const c=t.s.replace(/,/g,'').trim();
-      if(/^-?\d+(\.\d+)?$/.test(c)&&parseFloat(c)>=0){numToks.push({v:Math.round(Math.abs(parseFloat(c))),x:t.x});}
-      else if(t.s.trim())nameToks.push(t.s.trim());
+    // ─── ROW GROUPER ───────────────────────────────────
+    function groupRows(items) {
+      const sorted = [...items].sort((a, b) => { if (a.pg !== b.pg) return a.pg - b.pg; if (Math.abs(a.y - b.y) > 4) return b.y - a.y; return a.x - b.x; });
+      const rows = []; let cur = [], ly = null, lp = null;
+      for (const it of sorted) { if (ly === null || it.pg !== lp || Math.abs(it.y - ly) > 4) { if (cur.length) rows.push(cur); cur = [it]; ly = it.y; lp = it.pg; } else cur.push(it); }
+      if (cur.length) rows.push(cur);
+      return rows;
     }
-    if(!numToks.length||!nameToks.length)continue;
-    let np=nameToks.filter(Boolean);
-    if(/^\d+\.?$/.test(np[0]||''))np=np.slice(1);
-    const pname=norm(np.join(' '));
-    if(isSkip(pname)||!isValidProd(pname))continue;
-    let qtyToken=null;
-    if(saleX!==null){
-      let best=null,bd=Infinity;
-      for(const nt of numToks){
-        const d=Math.abs(nt.x-saleX);
-        if(d<bd&&d<TOL){
-          let rej=false;
-          if(stockX!==null&&Math.abs(nt.x-stockX)<d)rej=true;
-          if(balX!==null&&Math.abs(nt.x-balX)<d)rej=true;
-          if(!rej){bd=d;best=nt;}
+
+    // ─── EXTRACTOR (strict v3) ─────────────────────────
+    function extract(rows, filename) {
+      const recs = []; let curDate = extractDateFromFilename(filename);
+      let saleX = null, stockX = null, balX = null, headerIdx = -1;
+      const TOL = 42;
+      // Find header
+      for (let i = 0; i < rows.length; i++) {
+        const rt = rows[i].map(t => t.s).join(' ').toLowerCase();
+        if (rt.includes('sale') && (rt.includes('qty') || rt.includes('quantity'))) {
+          headerIdx = i;
+          for (const t of rows[i]) {
+            const s = t.s.toLowerCase();
+            if ((s.includes('sale') && (s.includes('qty') || s.includes('quan'))) && saleX === null) saleX = t.x;
+            if ((s.includes('stock') || s.includes('opening') || s.includes('closing')) && stockX === null) stockX = t.x;
+            if (s.includes('balance') && balX === null) balX = t.x;
+          }
+          if (saleX === null) { for (const t of rows[i]) { if (t.s.toLowerCase().includes('sale')) { saleX = t.x; break; } } }
+          log(`📐 SaleX=${saleX ?? '?'} StockX=${stockX ?? '?'} BalX=${balX ?? '?'}`);
+          break;
         }
       }
-      qtyToken=best;
-    }else{
-      qtyToken=numToks.find(n=>Number.isInteger(n.v)&&n.v>0)||null;
+      if (headerIdx < 0) log('⚠ No "Sale Qty" header — using fallback mode', 'w');
+
+      for (let i = (headerIdx >= 0 ? headerIdx + 1 : 0); i < rows.length; i++) {
+        const row = rows[i]; const rt = row.map(t => t.s).join(' ');
+        const dt = dateFromText(rt); if (dt) { curDate = dt; continue; }
+        const nameToks = [], numToks = [];
+        for (const t of row) {
+          const c = t.s.replace(/,/g, '').trim();
+          if (/^-?\d+(\.\d+)?$/.test(c) && parseFloat(c) >= 0) { numToks.push({ v: Math.round(Math.abs(parseFloat(c))), x: t.x }); }
+          else if (t.s.trim()) nameToks.push(t.s.trim());
+        }
+        if (!numToks.length || !nameToks.length) continue;
+        let np = nameToks.filter(Boolean);
+        if (/^\d+\.?$/.test(np[0] || '')) np = np.slice(1);
+        const pname = norm(np.join(' '));
+        if (isSkip(pname) || !isValidProd(pname)) continue;
+        let qtyToken = null;
+        if (saleX !== null) {
+          let best = null, bd = Infinity;
+          for (const nt of numToks) {
+            const d = Math.abs(nt.x - saleX);
+            if (d < bd && d < TOL) {
+              let rej = false;
+              if (stockX !== null && Math.abs(nt.x - stockX) < d) rej = true;
+              if (balX !== null && Math.abs(nt.x - balX) < d) rej = true;
+              if (!rej) { bd = d; best = nt; }
+            }
+          }
+          qtyToken = best;
+        } else {
+          qtyToken = numToks.find(n => Number.isInteger(n.v) && n.v > 0) || null;
+        }
+        if (!qtyToken || qtyToken.v <= 0) continue;
+        recs.push({ date: curDate || today(), product: pname, saleQty: qtyToken.v, isMyBrand: isMyBrand(pname) });
+      }
+      // Dedup
+      const dd = {}; recs.forEach(r => { const k = r.date + '|' + r.product; if (!dd[k]) dd[k] = { ...r }; else dd[k].saleQty += r.saleQty; });
+      return Object.values(dd);
     }
-    if(!qtyToken||qtyToken.v<=0)continue;
-    recs.push({date:curDate||today(),product:pname,saleQty:qtyToken.v,isMyBrand:isMyBrand(pname)});
-  }
-  // Dedup
-  const dd={};recs.forEach(r=>{const k=r.date+'|'+r.product;if(!dd[k])dd[k]={...r};else dd[k].saleQty+=r.saleQty;});
-  return Object.values(dd);
-}
 
-// ─── DATE HELPERS ──────────────────────────────────
-const MON={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
-function extractDateFromFilename(fn){const p1=fn.match(/(\d{2})[-_](\d{2})[-_](\d{4})/);if(p1)return`${p1[3]}-${p1[2].padStart(2,'0')}-${p1[1].padStart(2,'0')}`;const p2=fn.match(/(\d{4})[-_](\d{2})[-_](\d{2})/);if(p2)return`${p2[1]}-${p2[2].padStart(2,'0')}-${p2[3].padStart(2,'0')}`;return null;}
-function dateFromText(l){const p1=l.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);if(p1)return`${p1[3]}-${p1[2].padStart(2,'0')}-${p1[1].padStart(2,'0')}`;const p2=l.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);if(p2)return`${p2[1]}-${p2[2].padStart(2,'0')}-${p2[3].padStart(2,'0')}`;const p3=l.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s,]+(\d{4})/i);if(p3)return`${p3[3]}-${MON[p3[2].slice(0,3).toLowerCase()]||'01'}-${p3[1].padStart(2,'0')}`;const p4=l.match(/^(\d{1,2})[-\s](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i);if(p4)return`${new Date().getFullYear()}-${MON[p4[2].slice(0,3).toLowerCase()]||'01'}-${p4[1].padStart(2,'0')}`;return null;}
-function today(){return new Date().toISOString().slice(0,10);}
-function fmtD(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]}-${y}`;}
-function norm(s){return s.replace(/\s+/g,' ').trim();}
-function uid(){return Math.random().toString(36).slice(2,10);}
+    // ─── DATE HELPERS ──────────────────────────────────
+    const MON = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+    function extractDateFromFilename(fn) { const p1 = fn.match(/(\d{2})[-_](\d{2})[-_](\d{4})/); if (p1) return `${p1[3]}-${p1[2].padStart(2, '0')}-${p1[1].padStart(2, '0')}`; const p2 = fn.match(/(\d{4})[-_](\d{2})[-_](\d{2})/); if (p2) return `${p2[1]}-${p2[2].padStart(2, '0')}-${p2[3].padStart(2, '0')}`; return null; }
+    function dateFromText(l) { const p1 = l.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/); if (p1) return `${p1[3]}-${p1[2].padStart(2, '0')}-${p1[1].padStart(2, '0')}`; const p2 = l.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/); if (p2) return `${p2[1]}-${p2[2].padStart(2, '0')}-${p2[3].padStart(2, '0')}`; const p3 = l.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s,]+(\d{4})/i); if (p3) return `${p3[3]}-${MON[p3[2].slice(0, 3).toLowerCase()] || '01'}-${p3[1].padStart(2, '0')}`; const p4 = l.match(/^(\d{1,2})[-\s](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i); if (p4) return `${new Date().getFullYear()}-${MON[p4[2].slice(0, 3).toLowerCase()] || '01'}-${p4[1].padStart(2, '0')}`; return null; }
+    function today() { return new Date().toISOString().slice(0, 10); }
+    function fmtD(iso) { if (!iso) return '—'; const [y, m, d] = iso.split('-'); return `${d}-${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m - 1]}-${y}`; }
+    function norm(s) { return s.replace(/\s+/g, ' ').trim(); }
+    function uid() { return Math.random().toString(36).slice(2, 10); }
 
-// ─── EDITABLE TABLE ────────────────────────────────
-function renderEditTable(){
-  const wrap=document.getElementById('editTblWrap');
-  if(!adminRec.length){wrap.innerHTML=`<div class="empty-state"><div class="empty-icon">🥃</div><div class="empty-title">No data</div><div class="empty-sub">Upload a PDF to get started</div></div>`;document.getElementById('previewMeta').textContent='—';return;}
-  const totQty=adminRec.reduce((s,r)=>s+r.saleQty,0);
-  document.getElementById('previewMeta').textContent=`${adminRec.length} rows · ${[...new Set(adminRec.map(r=>r.date))].length} date(s) · ${totQty.toLocaleString()} total qty`;
-  const sorted=[...adminRec].sort((a,b)=>(b.isMyBrand-a.isMyBrand)||a.date.localeCompare(b.date)||a.product.localeCompare(b.product));
-  const rows=sorted.map(r=>`
-    <tr class="${r.isMyBrand?'my-row':''}" data-id="${r.id}">
-      <td><span class="${r.isMyBrand?'badge-my':'badge-comp'}">${r.isMyBrand?'⭐':'○'}</span></td>
+    // ─── EDITABLE TABLE ────────────────────────────────
+    function renderEditTable() {
+      const wrap = document.getElementById('editTblWrap');
+      if (!adminRec.length) { wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">🥃</div><div class="empty-title">No data</div><div class="empty-sub">Upload a PDF to get started</div></div>`; document.getElementById('previewMeta').textContent = '—'; return; }
+      const totQty = adminRec.reduce((s, r) => s + r.saleQty, 0);
+      document.getElementById('previewMeta').textContent = `${adminRec.length} rows · ${[...new Set(adminRec.map(r => r.date))].length} date(s) · ${totQty.toLocaleString()} total qty`;
+      const sorted = [...adminRec].sort((a, b) => (b.isMyBrand - a.isMyBrand) || a.date.localeCompare(b.date) || a.product.localeCompare(b.product));
+      const rows = sorted.map(r => `
+    <tr class="${r.isMyBrand ? 'my-row' : ''}" data-id="${r.id}">
+      <td><span class="${r.isMyBrand ? 'badge-my' : 'badge-comp'}">${r.isMyBrand ? '⭐' : '○'}</span></td>
       <td><input class="edit-input" data-f="date" data-id="${r.id}" value="${r.date}" style="max-width:120px;"/></td>
       <td><input class="edit-input" data-f="product" data-id="${r.id}" value="${r.product}" style="min-width:260px;"/></td>
       <td style="text-align:right;"><input class="edit-input edit-qty" data-f="saleQty" data-id="${r.id}" value="${r.saleQty}" type="number" min="0"/></td>
       <td><button class="del-row-btn" onclick="deleteRow('${r.id}')" title="Remove row">✕</button></td>
     </tr>`).join('');
-  wrap.innerHTML=`<table class="edit-tbl"><thead><tr><th>Brand</th><th>Date</th><th>Product Name</th><th style="text-align:right;">Sale Qty</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-  wrap.querySelectorAll('.edit-input').forEach(inp=>{
-    inp.addEventListener('change',()=>{
-      const id=inp.dataset.id,f=inp.dataset.f;
-      const rec=adminRec.find(r=>r.id===id);if(!rec)return;
-      if(f==='saleQty'){rec.saleQty=Math.max(0,parseInt(inp.value)||0);inp.value=rec.saleQty;}
-      else{rec[f]=inp.value.trim();if(f==='product')rec.isMyBrand=isMyBrand(rec.product);}
-      showAddToDash();
-    });
-  });
-}
+      wrap.innerHTML = `<table class="edit-tbl"><thead><tr><th>Brand</th><th>Date</th><th>Product Name</th><th style="text-align:right;">Sale Qty</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+      wrap.querySelectorAll('.edit-input').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const id = inp.dataset.id, f = inp.dataset.f;
+          const rec = adminRec.find(r => r.id === id); if (!rec) return;
+          if (f === 'saleQty') { rec.saleQty = Math.max(0, parseInt(inp.value) || 0); inp.value = rec.saleQty; }
+          else { rec[f] = inp.value.trim(); if (f === 'product') rec.isMyBrand = isMyBrand(rec.product); }
+          showAddToDash();
+        });
+      });
+    }
 
-function deleteRow(id){adminRec=adminRec.filter(r=>r.id!==id);renderEditTable();if(!adminRec.length)document.getElementById('addToDashCard').style.display='none';else showAddToDash();}
-function addBlankRow(){adminRec.push({id:uid(),date:today(),product:'New Whisky Product 750ml',saleQty:0,isMyBrand:false});renderEditTable();showAddToDash();toast('Blank row added — fill in details','warn');}
-function showAddToDash(){const dates=[...new Set(adminRec.map(r=>r.date))].map(fmtD).join(', ');document.getElementById('addToDashSub').textContent=`${adminRec.length} records · ${dates} · Edit any field above if needed.`;document.getElementById('addToDashCard').style.display='block';}
-function clearAdminData(){if(!adminRec.length){toast('Nothing to clear','err');return;}if(!confirm('Clear all extracted data?'))return;adminRec=[];renderEditTable();document.getElementById('addToDashCard').style.display='none';setWF(1);toast('Data cleared');}
+    function deleteRow(id) { adminRec = adminRec.filter(r => r.id !== id); renderEditTable(); if (!adminRec.length) document.getElementById('addToDashCard').style.display = 'none'; else showAddToDash(); }
+    function addBlankRow() { adminRec.push({ id: uid(), date: today(), product: 'New Whisky Product 750ml', saleQty: 0, isMyBrand: false }); renderEditTable(); showAddToDash(); toast('Blank row added — fill in details', 'warn'); }
+    function showAddToDash() { const dates = [...new Set(adminRec.map(r => r.date))].map(fmtD).join(', '); document.getElementById('addToDashSub').textContent = `${adminRec.length} records · ${dates} · Edit any field above if needed.`; document.getElementById('addToDashCard').style.display = 'block'; }
+    function clearAdminData() { if (!adminRec.length) { toast('Nothing to clear', 'err'); return; } if (!confirm('Clear all extracted data?')) return; adminRec = []; renderEditTable(); document.getElementById('addToDashCard').style.display = 'none'; setWF(1); toast('Data cleared'); }
 
-// ─── ADD TO DASHBOARD ──────────────────────────────
-async function addToDashboard(){
-  if(!adminRec.length){toast('No data','err');return;}
-  if(!window.fbReady){toast('Firebase not ready','err');return;}
-  const valid=adminRec.filter(r=>r.saleQty>0);
-  const skipped=adminRec.length-valid.length;
-  if(!valid.length){toast('All rows have zero quantity — edit first','err');return;}
-  const btn=document.getElementById('addToDashBtn');btn.disabled=true;btn.textContent='Saving…';
-  setFbStatus('saving','Saving…');
-  try{
-    const db=window._fbDb,batchId='batch_'+Date.now();
-    await window._fbSet(window._fbDoc(db,'whisky_batches',batchId),{records:valid,uploadedAt:new Date().toISOString(),dates:[...new Set(valid.map(r=>r.date))],count:valid.length});
-    const col=window._fbCol(db,'whisky_sales_v2');
-    for(const r of valid)await window._fbAdd(col,{date:r.date,product:r.product,saleQty:r.saleQty,isMyBrand:r.isMyBrand,savedAt:new Date().toISOString(),batchId});
-    setFbStatus('ok',`${valid.length} saved`);
-    toast(`☁ ${valid.length} records saved!${skipped>0?` (${skipped} zero-qty skipped)`:''}`, 'ok');
-    setWF(4);btn.textContent='✅ Done!';
-    setTimeout(()=>{adminRec=[];renderEditTable();document.getElementById('addToDashCard').style.display='none';btn.textContent='📊 Add to Dashboard';btn.disabled=false;setWF(1);populateDelDates();},2400);
-  }catch(e){setFbStatus('err','Error');toast('Firebase error: '+e.message,'err');btn.disabled=false;btn.textContent='📊 Add to Dashboard';}
-}
+    // ─── ADD TO DASHBOARD ──────────────────────────────
+    async function addToDashboard() {
+      if (!adminRec.length) { toast('No data', 'err'); return; }
+      if (!window.fbReady) { toast('Firebase not ready', 'err'); return; }
+      const valid = adminRec.filter(r => r.saleQty > 0);
+      const skipped = adminRec.length - valid.length;
+      if (!valid.length) { toast('All rows have zero quantity — edit first', 'err'); return; }
+      const btn = document.getElementById('addToDashBtn'); btn.disabled = true; btn.textContent = 'Saving…';
+      setFbStatus('saving', 'Saving…');
+      try {
+        const db = window._fbDb, batchId = 'batch_' + Date.now();
+        await window._fbSet(window._fbDoc(db, 'whisky_batches', batchId), { records: valid, uploadedAt: new Date().toISOString(), dates: [...new Set(valid.map(r => r.date))], count: valid.length });
+        const col = window._fbCol(db, 'whisky_sales_v2');
+        for (const r of valid) {
+          const monthTag = r.date ? r.date.slice(0, 7) : today().slice(0, 7); // e.g. "2025-04"
+          await window._fbAdd(col, { date: r.date, product: r.product, saleQty: r.saleQty, isMyBrand: r.isMyBrand, savedAt: new Date().toISOString(), batchId, month: monthTag });
+        }
+        setFbStatus('ok', `${valid.length} saved`);
+        toast(`☁ ${valid.length} records saved!${skipped > 0 ? ` (${skipped} zero-qty skipped)` : ''}`, 'ok');
+        setWF(4); btn.textContent = '✅ Done!';
+        setTimeout(() => { adminRec = []; renderEditTable(); document.getElementById('addToDashCard').style.display = 'none'; btn.textContent = '📊 Add to Dashboard'; btn.disabled = false; setWF(1); populateDelDates(); }, 2400);
+      } catch (e) { setFbStatus('err', 'Error'); toast('Firebase error: ' + e.message, 'err'); btn.disabled = false; btn.textContent = '📊 Add to Dashboard'; }
+    }
 
-function exportAdminCSV(){if(!adminRec.length){toast('No data','err');return;}const h=['"Date"','"Product"','"Brand"','"Sale Qty"'].join(',');const r=adminRec.map(r=>[fmtD(r.date),`"${r.product}"`,r.isMyBrand?'My Brand':'Competitor',r.saleQty].join(','));dl(new Blob([[h,...r].join('\n')],{type:'text/csv'}),'admin_preview_'+today()+'.csv');toast('CSV exported!','ok');}
+    function exportAdminCSV() { if (!adminRec.length) { toast('No data', 'err'); return; } const h = ['"Date"', '"Product"', '"Brand"', '"Sale Qty"'].join(','); const r = adminRec.map(r => [fmtD(r.date), `"${r.product}"`, r.isMyBrand ? 'My Brand' : 'Competitor', r.saleQty].join(',')); dl(new Blob([[h, ...r].join('\n')], { type: 'text/csv' }), 'admin_preview_' + today() + '.csv'); toast('CSV exported!', 'ok'); }
 
-// ─── FIREBASE STATUS ───────────────────────────────
-function setFbStatus(type,msg){const el=document.getElementById('fbStatus');el.className='fb-status '+type;el.textContent='🔥 '+msg;if(type!=='saving')setTimeout(()=>{el.className='fb-status ok';el.textContent='🔥 Connected';},3000);}
+    // ─── FIREBASE STATUS ───────────────────────────────
+    function setFbStatus(type, msg) { const el = document.getElementById('fbStatus'); el.className = 'fb-status ' + type; el.textContent = '🔥 ' + msg; if (type !== 'saving') setTimeout(() => { el.className = 'fb-status ok'; el.textContent = '🔥 Connected'; }, 3000); }
 
-// ─── SECURE DELETE (Admin Panel) ───────────────────
-async function populateDelDates(){
-  if(!window.fbReady)return;
-  try{
-    const snap=await window._fbGet(window._fbCol(window._fbDb,'whisky_sales_v2'));
-    const dates=[...new Set(snap.docs.map(d=>d.data().date))].sort().reverse();
-    const sel=document.getElementById('delDateSel');
-    sel.innerHTML='<option value="">— pick date —</option>'+dates.map(d=>`<option value="${d}">${fmtD(d)} (${d})</option>`).join('');
-    // Also populate dashboard delete dropdown
-    const dsel=document.getElementById('dashDelDateSel');
-    if(dsel)dsel.innerHTML='<option value="">— Select Date —</option>'+dates.map(d=>`<option value="${d}">${fmtD(d)}</option>`).join('');
-    // Show/hide dashboard delete button
-    const btn=document.getElementById('dashDelBtn');
-    if(btn)btn.style.display=dates.length>0?'block':'none';
-  }catch(e){}
-}
-function openDeleteModal(){
-  const sel=document.getElementById('delDateSel');
-  if(!sel.value){toast('Select a date first','err');return;}
-  pendingDelDate=sel.value;
-  document.getElementById('deleteModalSub').textContent=`Enter the security password to permanently delete ALL records for ${fmtD(pendingDelDate)}. This cannot be undone.`;
-  document.getElementById('modalPinInput').value='';
-  document.getElementById('deleteModal').classList.add('open');
-  setTimeout(()=>document.getElementById('modalPinInput').focus(),120);
-}
-function closeDeleteModal(){document.getElementById('deleteModal').classList.remove('open');pendingDelDate='';}
-async function confirmDelete(){
-  const pin=document.getElementById('modalPinInput').value;
-  if(pin!==DELETE_PIN){toast('❌ Incorrect password — deletion cancelled','err');document.getElementById('modalPinInput').value='';return;}
-  if(!pendingDelDate)return;
-  if(!window.fbReady){toast('Firebase not ready','err');return;}
-  closeDeleteModal();
-  setFbStatus('saving','Deleting…');
-  try{
-    console.log('[Delete] Targeting date:', pendingDelDate);
-    const colRef = window._fbCol(window._fbDb, 'whisky_sales_v2');
-    const del = await window._fbDelWhere(colRef, 'date', pendingDelDate);
-    if(del===0){toast('⚠ No records found for that date','warn');}
-    else{toast(`🗑 ${del} record(s) for ${fmtD(pendingDelDate)} permanently deleted from Firebase`,'ok');}
-    setFbStatus('ok',`${del} deleted`);
-    await loadDashboardFromFirebase();
-    await populateDelDates();
-  }catch(e){
-    console.error('[Delete Error]',e);
-    setFbStatus('err','Error');
-    toast('Delete error: '+e.message,'err');
-  }
-}
+    // ─── SECURE DELETE (Admin Panel) ───────────────────
+    async function populateDelDates() {
+      if (!window.fbReady) return;
+      try {
+        const snap = await window._fbGet(window._fbCol(window._fbDb, 'whisky_sales_v2'));
+        const dates = [...new Set(snap.docs.map(d => d.data().date))].sort().reverse();
+        const sel = document.getElementById('delDateSel');
+        sel.innerHTML = '<option value="">— pick date —</option>' + dates.map(d => `<option value="${d}">${fmtD(d)} (${d})</option>`).join('');
+        // Also populate dashboard delete dropdown
+        const dsel = document.getElementById('dashDelDateSel');
+        if (dsel) dsel.innerHTML = '<option value="">— Select Date —</option>' + dates.map(d => `<option value="${d}">${fmtD(d)}</option>`).join('');
+        // Show/hide dashboard delete button
+        const btn = document.getElementById('dashDelBtn');
+        if (btn) btn.style.display = dates.length > 0 ? 'block' : 'none';
+      } catch (e) { }
+    }
+    function openDeleteModal() {
+      const sel = document.getElementById('delDateSel');
+      if (!sel.value) { toast('Select a date first', 'err'); return; }
+      pendingDelDate = sel.value;
+      document.getElementById('deleteModalSub').textContent = `Enter the security password to permanently delete ALL records for ${fmtD(pendingDelDate)}. This cannot be undone.`;
+      document.getElementById('modalPinInput').value = '';
+      document.getElementById('deleteModal').classList.add('open');
+      setTimeout(() => document.getElementById('modalPinInput').focus(), 120);
+    }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); pendingDelDate = ''; }
+    async function confirmDelete() {
+      const pin = document.getElementById('modalPinInput').value;
+      if (pin !== DELETE_PIN) { toast('❌ Incorrect password — deletion cancelled', 'err'); document.getElementById('modalPinInput').value = ''; return; }
+      if (!pendingDelDate) return;
+      if (!window.fbReady) { toast('Firebase not ready', 'err'); return; }
+      closeDeleteModal();
+      setFbStatus('saving', 'Deleting…');
+      try {
+        console.log('[Delete] Targeting date:', pendingDelDate);
+        const colRef = window._fbCol(window._fbDb, 'whisky_sales_v2');
+        const del = await window._fbDelWhere(colRef, 'date', pendingDelDate);
+        if (del === 0) { toast('⚠ No records found for that date', 'warn'); }
+        else { toast(`🗑 ${del} record(s) for ${fmtD(pendingDelDate)} permanently deleted from Firebase`, 'ok'); }
+        setFbStatus('ok', `${del} deleted`);
+        await loadDashboardFromFirebase();
+        await populateDelDates();
+      } catch (e) {
+        console.error('[Delete Error]', e);
+        setFbStatus('err', 'Error');
+        toast('Delete error: ' + e.message, 'err');
+      }
+    }
 
-// ─── DASHBOARD DELETE (with double confirmation) ───
-let _dashPendingDelDate='';
-function openDashDeleteModal(){
-  const sel=document.getElementById('dashDelDateSel');
-  sel.value='';
-  document.getElementById('dashDeleteModal').classList.add('open');
-}
-function closeDashDeleteModal(){document.getElementById('dashDeleteModal').classList.remove('open');}
-function dashDeleteStep2(){
-  const sel=document.getElementById('dashDelDateSel');
-  if(!sel.value){toast('Please select a date first','err');return;}
-  _dashPendingDelDate=sel.value;
-  closeDashDeleteModal();
-  document.getElementById('dashDeleteConfirmSub').textContent=`Are you sure you want to delete ALL records for ${fmtD(_dashPendingDelDate)}? This cannot be undone.`;
-  document.getElementById('dashDeleteConfirmModal').classList.add('open');
-}
-function closeDashDeleteConfirmModal(){document.getElementById('dashDeleteConfirmModal').classList.remove('open');_dashPendingDelDate='';}
-function dashDeleteStep3(){
-  document.getElementById('dashDeleteConfirmModal').classList.remove('open');
-  document.getElementById('dashDelPwInput').value='';
-  document.getElementById('dashDelPwErr').style.display='none';
-  document.getElementById('dashDeletePwModal').classList.add('open');
-  setTimeout(()=>document.getElementById('dashDelPwInput').focus(),120);
-}
-function closeDashDeletePwModal(){document.getElementById('dashDeletePwModal').classList.remove('open');_dashPendingDelDate='';}
-async function dashDeleteExecute(){
-  const pw=document.getElementById('dashDelPwInput').value;
-  if(pw!==DELETE_PIN){
-    document.getElementById('dashDelPwErr').style.display='block';
-    document.getElementById('dashDelPwInput').value='';
-    setTimeout(()=>closeDashDeletePwModal(),2200);
-    return;
-  }
-  if(!_dashPendingDelDate){toast('No date selected','err');return;}
-  if(!window.fbReady){toast('Firebase not ready','err');return;}
-  const dateToDelete=_dashPendingDelDate;
-  closeDashDeletePwModal();
-  setFbStatus('saving','Deleting…');
-  try{
-    console.log('[Dashboard Delete] Targeting date:', dateToDelete);
-    const colRef = window._fbCol(window._fbDb, 'whisky_sales_v2');
-    const del = await window._fbDelWhere(colRef, 'date', dateToDelete);
-    if(del===0){toast('⚠ No records found for that date','warn');}
-    else{toast(`🗑 ${del} record(s) for ${fmtD(dateToDelete)} permanently deleted from Firebase`,'ok');}
-    setFbStatus('ok',`${del} deleted`);
-    _dashPendingDelDate='';
-    await loadDashboardFromFirebase();
-    await populateDelDates();
-  }catch(e){
-    console.error('[Dashboard Delete Error]',e);
-    setFbStatus('err','Error');
-    toast('Delete error: '+e.message,'err');
-  }
-}
+    // ─── DASHBOARD DELETE (with double confirmation) ───
+    let _dashPendingDelDate = '';
+    function openDashDeleteModal() {
+      const sel = document.getElementById('dashDelDateSel');
+      sel.value = '';
+      document.getElementById('dashDeleteModal').classList.add('open');
+    }
+    function closeDashDeleteModal() { document.getElementById('dashDeleteModal').classList.remove('open'); }
+    function dashDeleteStep2() {
+      const sel = document.getElementById('dashDelDateSel');
+      if (!sel.value) { toast('Please select a date first', 'err'); return; }
+      _dashPendingDelDate = sel.value;
+      closeDashDeleteModal();
+      document.getElementById('dashDeleteConfirmSub').textContent = `Are you sure you want to delete ALL records for ${fmtD(_dashPendingDelDate)}? This cannot be undone.`;
+      document.getElementById('dashDeleteConfirmModal').classList.add('open');
+    }
+    function closeDashDeleteConfirmModal() { document.getElementById('dashDeleteConfirmModal').classList.remove('open'); _dashPendingDelDate = ''; }
+    function dashDeleteStep3() {
+      document.getElementById('dashDeleteConfirmModal').classList.remove('open');
+      document.getElementById('dashDelPwInput').value = '';
+      document.getElementById('dashDelPwErr').style.display = 'none';
+      document.getElementById('dashDeletePwModal').classList.add('open');
+      setTimeout(() => document.getElementById('dashDelPwInput').focus(), 120);
+    }
+    function closeDashDeletePwModal() { document.getElementById('dashDeletePwModal').classList.remove('open'); _dashPendingDelDate = ''; }
+    async function dashDeleteExecute() {
+      const pw = document.getElementById('dashDelPwInput').value;
+      if (pw !== DELETE_PIN) {
+        document.getElementById('dashDelPwErr').style.display = 'block';
+        document.getElementById('dashDelPwInput').value = '';
+        setTimeout(() => closeDashDeletePwModal(), 2200);
+        return;
+      }
+      if (!_dashPendingDelDate) { toast('No date selected', 'err'); return; }
+      if (!window.fbReady) { toast('Firebase not ready', 'err'); return; }
+      const dateToDelete = _dashPendingDelDate;
+      closeDashDeletePwModal();
+      setFbStatus('saving', 'Deleting…');
+      try {
+        console.log('[Dashboard Delete] Targeting date:', dateToDelete);
+        const colRef = window._fbCol(window._fbDb, 'whisky_sales_v2');
+        const del = await window._fbDelWhere(colRef, 'date', dateToDelete);
+        if (del === 0) { toast('⚠ No records found for that date', 'warn'); }
+        else { toast(`🗑 ${del} record(s) for ${fmtD(dateToDelete)} permanently deleted from Firebase`, 'ok'); }
+        setFbStatus('ok', `${del} deleted`);
+        _dashPendingDelDate = '';
+        await loadDashboardFromFirebase();
+        await populateDelDates();
+      } catch (e) {
+        console.error('[Dashboard Delete Error]', e);
+        setFbStatus('err', 'Error');
+        toast('Delete error: ' + e.message, 'err');
+      }
+    }
 
-// ─── LOAD DASHBOARD ────────────────────────────────
-async function loadDashboardFromFirebase(){
-  if(!window.fbReady){setTimeout(()=>loadDashboardFromFirebase(),600);return;}
-  setFbStatus('saving','Loading…');
-  try{
-    const snap=await window._fbGet(window._fbCol(window._fbDb,'whisky_sales_v2'));
-    const raw=[];snap.forEach(d=>{const r=d.data();raw.push({date:r.date,product:r.product,saleQty:r.saleQty,isMyBrand:r.isMyBrand});});
-    const merged={};raw.forEach(r=>{const k=r.date+'|'+r.product;if(!merged[k])merged[k]={...r,saleQty:0};merged[k].saleQty+=r.saleQty;});
-    dashRec=Object.values(merged);
-    setFbStatus('ok',`${dashRec.length} records`);
-    renderDashboard();populateDelDates();populateCmpDropdowns();
-  }catch(e){setFbStatus('err','Error');toast('Load error: '+e.message,'err');}
-}
+    // ─── LOAD DASHBOARD ────────────────────────────────
+    async function loadDashboardFromFirebase() {
+      if (!window.fbReady) { setTimeout(() => loadDashboardFromFirebase(), 600); return; }
+      setFbStatus('saving', 'Loading…');
+      try {
+        const snap = await window._fbGet(window._fbCol(window._fbDb, 'whisky_sales_v2'));
+        const raw = []; snap.forEach(d => { const r = d.data(); raw.push({ date: r.date, product: r.product, saleQty: r.saleQty, isMyBrand: r.isMyBrand }); });
+        const merged = {}; raw.forEach(r => { const k = r.date + '|' + r.product; if (!merged[k]) merged[k] = { ...r, saleQty: 0 }; merged[k].saleQty += r.saleQty; });
+        dashRec = Object.values(merged);
+        // Auto-select current month on first load if it has data, else 'all'
+        if (!dashMonthFilter) {
+          const curMk = currentMonthKey();
+          const hasCurrentMonth = dashRec.some(r => getMonthKey(r.date) === curMk);
+          dashMonthFilter = hasCurrentMonth ? curMk : '';
+        }
+        setFbStatus('ok', `${dashRec.length} records`);
+        renderDashboard(); populateDelDates(); populateCmpDropdowns();
+      } catch (e) { setFbStatus('err', 'Error'); toast('Load error: ' + e.message, 'err'); }
+    }
 
-// ─── DASHBOARD RENDER ──────────────────────────────
-function renderDashboard(){
-  if(!dashRec.length){
-    document.getElementById('dashNoData').style.display='block';
-    document.getElementById('dashContent').style.display='none';
-    ['dTot','dMy','dComp','dProd','dDays'].forEach(id=>document.getElementById(id).textContent='—');
-    const btn=document.getElementById('dashDelBtn');if(btn)btn.style.display='none';
-    return;
-  }
-  document.getElementById('dashNoData').style.display='none';document.getElementById('dashContent').style.display='block';
-  const myRec=dashRec.filter(r=>r.isMyBrand);
-  const totAll=dashRec.reduce((s,r)=>s+r.saleQty,0);const totMy=myRec.reduce((s,r)=>s+r.saleQty,0);
-  document.getElementById('dTot').textContent=totAll.toLocaleString();document.getElementById('dMy').textContent=totMy.toLocaleString();document.getElementById('dComp').textContent=(totAll-totMy).toLocaleString();document.getElementById('dProd').textContent=new Set(myRec.map(r=>r.product)).size;document.getElementById('dDays').textContent=new Set(dashRec.map(r=>r.date)).size;
-  const dates=[...new Set(dashRec.map(r=>r.date))].sort();
-  document.getElementById('dateNav').innerHTML=`<div class="date-chip all ${dashDateFilter===''?'active':''}" onclick="filterDashDate('')">All Dates</div>`+dates.map(d=>`<div class="date-chip ${dashDateFilter===d?'active':''}" onclick="filterDashDate('${d}')">${fmtD(d)}</div>`).join('');
-  renderMyBrandsTable(myRec);renderPivotDash();renderPieChart(myRec);renderGrowthChart(myRec,dates);
-}
+    // ─── MONTH FILTER HELPERS ──────────────────────────
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function filterDashDate(d){
-  dashDateFilter=d;
-  document.querySelectorAll('.date-chip').forEach(el=>{el.classList.remove('active');const oc=el.getAttribute('onclick')||'';if(d===''&&el.classList.contains('all'))el.classList.add('active');else if(oc.includes(`'${d}'`))el.classList.add('active');});
-  renderPivotDash();
-}
+    function getMonthKey(iso) { return iso ? iso.slice(0,7) : ''; } // "2025-04"
 
-function renderMyBrandsTable(myRec){
-  const pt={};myRec.forEach(r=>{pt[r.product]=(pt[r.product]||0)+r.saleQty;});
-  const sorted=Object.entries(pt).sort((a,b)=>b[1]-a[1]);const maxQ=sorted[0]?.[1]||1;const grand=sorted.reduce((s,[,v])=>s+v,0);
-  document.getElementById('myBrandsMeta').textContent=`${sorted.length} SKUs · ${grand.toLocaleString()} total`;
-  document.getElementById('myBrandsTbody').innerHTML=sorted.length?sorted.map(([p,q],i)=>`<tr><td class="rank-cell">${i+1}</td><td style="font-weight:600;color:var(--text);">${p.length>55?p.slice(0,53)+'…':p}</td><td class="qty-cell">${q.toLocaleString()}</td><td class="qty-cell" style="color:var(--text3);">${grand?(q/grand*100).toFixed(1)+'%':'—'}</td><td><div class="bar-mini" style="width:${Math.round(q/maxQ*100)}%"></div></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:22px;color:var(--text3);">No data</td></tr>';
-}
+    function fmtMonthKey(mk) {
+      if (!mk) return 'All Months';
+      const [y, m] = mk.split('-');
+      return MONTH_NAMES[+m - 1] + ' ' + y;
+    }
 
-function renderPivotDash(){
-  const rec=dashDateFilter?dashRec.filter(r=>r.date===dashDateFilter):dashRec;
-  const sc=document.getElementById('dashPivotScroll');
-  if(!rec.length){sc.innerHTML=`<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data</div></div>`;document.getElementById('pivotMeta').textContent='—';return;}
-  const dates=[...new Set(rec.map(r=>r.date))].sort();const myP=[...new Set(rec.filter(r=>r.isMyBrand).map(r=>r.product))];const cP=[...new Set(rec.filter(r=>!r.isMyBrand).map(r=>r.product))].sort();const allP=[...myP,...cP];
-  const lkp={};rec.forEach(r=>{if(!lkp[r.product])lkp[r.product]={};lkp[r.product][r.date]=(lkp[r.product][r.date]||0)+r.saleQty;});
-  document.getElementById('pivotMeta').textContent=`${dates.length} date(s) × ${allP.length} products`;
-  const hdrs=allP.map(p=>`<th class="${myP.includes(p)?'mbh':''}" title="${p}">${p.length>22?p.slice(0,20)+'…':p}</th>`).join('');
-  const rowTot={},colTot={};let grand=0;dates.forEach(d=>{rowTot[d]=0;allP.forEach(p=>{const v=lkp[p]?.[d]||0;rowTot[d]+=v;colTot[p]=(colTot[p]||0)+v;grand+=v;});});
-  let body='';dates.forEach(d=>{const cells=allP.map(p=>{const mb=myP.includes(p),v=lkp[p]?.[d]||0;return`<td class="${mb?'mbc':'compc'} ${v>0?'hv':'zv'}">${v>0?v.toLocaleString():'0'}</td>`;}).join('');body+=`<tr><td class="dc">${fmtD(d)}</td>${cells}<td class="totc">${rowTot[d].toLocaleString()}</td></tr>`;});
-  const tc=allP.map(p=>`<td class="${myP.includes(p)?'mbc':''}">${(colTot[p]||0).toLocaleString()}</td>`).join('');
-  body+=`<tr class="trow"><td class="dc">TOTAL</td>${tc}<td class="totc">${grand.toLocaleString()}</td></tr>`;
-  sc.innerHTML=`<table class="ptbl"><thead><tr><th class="dh">DATE</th>${hdrs}<th class="toth">TOTAL</th></tr></thead><tbody>${body}</tbody></table>`;
-}
+    function currentMonthKey() { return today().slice(0,7); }
 
-function renderPieChart(myRec){
-  const pt={};myRec.forEach(r=>{pt[r.product]=(pt[r.product]||0)+r.saleQty;});
-  const entries=Object.entries(pt).sort((a,b)=>b[1]-a[1]);
-  if(pieChartInst){try{pieChartInst.destroy();}catch(e){}}
-  if(!entries.length){document.getElementById('pieChart').innerHTML='';return;}
-  document.getElementById('pieChartMeta').textContent=`${entries.length} SKUs`;
-  pieChartInst=new ApexCharts(document.getElementById('pieChart'),{chart:{type:'donut',height:265,background:'transparent',animations:{speed:500}},series:entries.map(([,v])=>v),labels:entries.map(([p])=>p.length>32?p.slice(0,30)+'…':p),colors:['#c9942a','#f0b840','#2563eb','#3b82f6','#10b981','#7c5cfc','#f59e0b'],legend:{position:'bottom',labels:{colors:'#9aa3bf'},fontFamily:'Mulish,sans-serif',fontSize:'11px'},plotOptions:{pie:{donut:{size:'65%',labels:{show:true,total:{show:true,label:'Total',color:'#9aa3bf',fontFamily:'JetBrains Mono,monospace',formatter:w=>w.globals.seriesTotals.reduce((a,b)=>a+b,0).toLocaleString()}}}}},stroke:{colors:['#141720']},dataLabels:{enabled:true,style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px'},dropShadow:{enabled:false}},tooltip:{theme:'dark',style:{fontFamily:'JetBrains Mono,monospace'}},theme:{mode:'dark'}});
-  pieChartInst.render();
-}
+    /** Returns dashRec filtered by the active month (and optionally date) */
+    function getFilteredRec() {
+      let rec = dashRec;
+      if (dashMonthFilter) rec = rec.filter(r => getMonthKey(r.date) === dashMonthFilter);
+      if (dashDateFilter)  rec = rec.filter(r => r.date === dashDateFilter);
+      return rec;
+    }
 
-function renderGrowthChart(myRec,dates){
-  if(growthChartInst){try{growthChartInst.destroy();}catch(e){}}
-  if(!dates.length||!myRec.length)return;
-  const prods=[...new Set(myRec.map(r=>r.product))];
-  const lkp={};myRec.forEach(r=>{if(!lkp[r.product])lkp[r.product]={};lkp[r.product][r.date]=(lkp[r.product][r.date]||0)+r.saleQty;});
-  const series=prods.map(p=>{let c=0;return{name:p.length>35?p.slice(0,33)+'…':p,data:dates.map(d=>{c+=(lkp[p]?.[d]||0);return c;})};});
-  growthChartInst=new ApexCharts(document.getElementById('growthChart'),{chart:{type:'area',height:265,background:'transparent',toolbar:{show:false},animations:{speed:500}},series,xaxis:{categories:dates.map(fmtD),labels:{style:{colors:'#5a6380',fontFamily:'JetBrains Mono,monospace',fontSize:'10px'}}},yaxis:{labels:{style:{colors:'#5a6380',fontFamily:'JetBrains Mono,monospace',fontSize:'10px'}}},colors:['#c9942a','#f0b840','#2563eb','#3b82f6','#10b981','#7c5cfc'],fill:{type:'gradient',gradient:{shadeIntensity:.1,opacityFrom:.35,opacityTo:.04}},stroke:{curve:'smooth',width:2},legend:{labels:{colors:'#9aa3bf'},fontFamily:'Mulish,sans-serif',fontSize:'11px'},tooltip:{theme:'dark',style:{fontFamily:'JetBrains Mono,monospace'}},grid:{borderColor:'#2a2f45',strokeDashArray:3},theme:{mode:'dark'}});
-  growthChartInst.render();
-}
+    function renderMonthBar() {
+      const allMonths = [...new Set(dashRec.map(r => getMonthKey(r.date)))].filter(Boolean).sort().reverse();
+      const wrap = document.getElementById('monthChipsWrap');
+      const badge = document.getElementById('monthInfoBadge');
+      if (!allMonths.length) { wrap.innerHTML = '<span style="color:var(--text3);font-size:.7rem;">No data yet</span>'; badge.textContent = '—'; return; }
 
-// ══════════════════════════════════════════════════
-// SEARCHABLE AUTOCOMPLETE COMPARISON ENGINE
-// ══════════════════════════════════════════════════
-const CMP_COLORS=['#c9942a','#2563eb','#10b981','#ef4444','#7c5cfc','#f0b840','#3b82f6','#34d399','#fb923c','#a78bfa'];
+      // Build chips: All + each month
+      const chips = [''].concat(allMonths).map(mk => {
+        const isActive = mk === dashMonthFilter;
+        return `<div class="month-chip${isActive ? ' active' : ''}" onclick="filterDashMonth('${mk}')">${mk ? fmtMonthKey(mk) : 'All Months'}</div>`;
+      }).join('');
+      wrap.innerHTML = chips;
 
-function getProductTotals(){
-  const pt={};dashRec.forEach(r=>{pt[r.product]=(pt[r.product]||0)+r.saleQty;});
-  return Object.entries(pt).sort((a,b)=>b[1]-a[1]).map(([p,q])=>({name:p,qty:q,isMy:isMyBrand(p)}));
-}
+      // Badge info
+      const filteredRec = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+      const totalQty = filteredRec.reduce((s,r) => s + r.saleQty, 0);
+      badge.textContent = dashMonthFilter ? `${fmtMonthKey(dashMonthFilter)} · ${totalQty.toLocaleString()} units` : `All Time · ${totalQty.toLocaleString()} units`;
+    }
 
-function populateCmpDropdowns(){document.querySelectorAll('[data-ac-slot]').forEach(wrap=>{const id=wrap.dataset.acSlot;_acBuild(id,getProductTotals(),document.getElementById('acIn_'+id)?.value||'');});}
+    function filterDashMonth(mk) {
+      dashMonthFilter = mk;
+      dashDateFilter = ''; // reset day filter when month changes
+      renderMonthBar();
+      renderDashboard();
+    }
 
-function addCmpSlot(){
-  const id='s'+(++acSlotCounter);
-  const row=document.getElementById('cmpSlotsRow');
-  const slotNum=row.querySelectorAll('.cmp-slot').length+1;
-  const products=getProductTotals();
-  const slot=document.createElement('div');
-  slot.className='cmp-slot';slot.id='cmpSlot_'+id;
-  slot.innerHTML=`${slotNum>2?`<button class="cmp-remove" onclick="document.getElementById('cmpSlot_${id}').remove();_renumberSlots()">×</button>`:''}
+    // ─── DASHBOARD RENDER ──────────────────────────────
+    function renderDashboard() {
+      renderMonthBar(); // always refresh month bar
+
+      // Use month-filtered records for the whole dashboard
+      const rec = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+
+      if (!rec.length) {
+        document.getElementById('dashNoData').style.display = 'block';
+        document.getElementById('dashContent').style.display = 'none';
+        ['dTot', 'dMy', 'dComp', 'dProd', 'dDays'].forEach(id => document.getElementById(id).textContent = '—');
+        const btn = document.getElementById('dashDelBtn'); if (btn) btn.style.display = 'none';
+        return;
+      }
+      document.getElementById('dashNoData').style.display = 'none'; document.getElementById('dashContent').style.display = 'block';
+      const myRec = rec.filter(r => r.isMyBrand);
+      const totAll = rec.reduce((s, r) => s + r.saleQty, 0); const totMy = myRec.reduce((s, r) => s + r.saleQty, 0);
+      document.getElementById('dTot').textContent = totAll.toLocaleString(); document.getElementById('dMy').textContent = totMy.toLocaleString(); document.getElementById('dComp').textContent = (totAll - totMy).toLocaleString(); document.getElementById('dProd').textContent = new Set(myRec.map(r => r.product)).size; document.getElementById('dDays').textContent = new Set(rec.map(r => r.date)).size;
+      const dates = [...new Set(rec.map(r => r.date))].sort();
+      document.getElementById('dateNav').innerHTML = `<div class="date-chip all ${dashDateFilter === '' ? 'active' : ''}" onclick="filterDashDate('')">All Dates</div>` + dates.map(d => `<div class="date-chip ${dashDateFilter === d ? 'active' : ''}" onclick="filterDashDate('${d}')">${fmtD(d)}</div>`).join('');
+      const btn = document.getElementById('dashDelBtn'); if (btn) btn.style.display = dashRec.length ? 'block' : 'none';
+      renderMyBrandsTable(myRec); renderPivotDash(); renderPieChart(myRec); renderGrowthChart(myRec, dates);
+    }
+
+    function filterDashDate(d) {
+      dashDateFilter = d;
+      document.querySelectorAll('.date-chip').forEach(el => { el.classList.remove('active'); const oc = el.getAttribute('onclick') || ''; if (d === '' && el.classList.contains('all')) el.classList.add('active'); else if (oc.includes(`'${d}'`)) el.classList.add('active'); });
+      renderPivotDash();
+    }
+
+    function renderMyBrandsTable(myRec) {
+      const pt = {}; myRec.forEach(r => { pt[r.product] = (pt[r.product] || 0) + r.saleQty; });
+      const sorted = Object.entries(pt).sort((a, b) => b[1] - a[1]); const maxQ = sorted[0]?.[1] || 1; const grand = sorted.reduce((s, [, v]) => s + v, 0);
+      document.getElementById('myBrandsMeta').textContent = `${sorted.length} SKUs · ${grand.toLocaleString()} total`;
+      document.getElementById('myBrandsTbody').innerHTML = sorted.length ? sorted.map(([p, q], i) => `<tr><td class="rank-cell">${i + 1}</td><td style="font-weight:600;color:var(--text);">${p.length > 55 ? p.slice(0, 53) + '…' : p}</td><td class="qty-cell">${q.toLocaleString()}</td><td class="qty-cell" style="color:var(--text3);">${grand ? (q / grand * 100).toFixed(1) + '%' : '—'}</td><td><div class="bar-mini" style="width:${Math.round(q / maxQ * 100)}%"></div></td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:22px;color:var(--text3);">No data</td></tr>';
+    }
+
+    function renderPivotDash() {
+      // Apply month filter first, then optional date filter
+      let rec = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+      if (dashDateFilter) rec = rec.filter(r => r.date === dashDateFilter);
+      const sc = document.getElementById('dashPivotScroll');
+      if (!rec.length) { sc.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data</div></div>`; document.getElementById('pivotMeta').textContent = '—'; return; }
+      const dates = [...new Set(rec.map(r => r.date))].sort(); const myP = [...new Set(rec.filter(r => r.isMyBrand).map(r => r.product))]; const cP = [...new Set(rec.filter(r => !r.isMyBrand).map(r => r.product))].sort(); const allP = [...myP, ...cP];
+      const lkp = {}; rec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
+      document.getElementById('pivotMeta').textContent = `${dates.length} date(s) × ${allP.length} products`;
+      const hdrs = allP.map(p => `<th class="${myP.includes(p) ? 'mbh' : ''}" title="${p}">${p.length > 22 ? p.slice(0, 20) + '…' : p}</th>`).join('');
+      const rowTot = {}, colTot = {}; let grand = 0; dates.forEach(d => { rowTot[d] = 0; allP.forEach(p => { const v = lkp[p]?.[d] || 0; rowTot[d] += v; colTot[p] = (colTot[p] || 0) + v; grand += v; }); });
+      let body = ''; dates.forEach(d => { const cells = allP.map(p => { const mb = myP.includes(p), v = lkp[p]?.[d] || 0; return `<td class="${mb ? 'mbc' : 'compc'} ${v > 0 ? 'hv' : 'zv'}">${v > 0 ? v.toLocaleString() : '0'}</td>`; }).join(''); body += `<tr><td class="dc">${fmtD(d)}</td>${cells}<td class="totc">${rowTot[d].toLocaleString()}</td></tr>`; });
+      const tc = allP.map(p => `<td class="${myP.includes(p) ? 'mbc' : ''}">${(colTot[p] || 0).toLocaleString()}</td>`).join('');
+      body += `<tr class="trow"><td class="dc">TOTAL</td>${tc}<td class="totc">${grand.toLocaleString()}</td></tr>`;
+      sc.innerHTML = `<table class="ptbl"><thead><tr><th class="dh">DATE</th>${hdrs}<th class="toth">TOTAL</th></tr></thead><tbody>${body}</tbody></table>`;
+    }
+
+    function renderPieChart(myRec) {
+      const pt = {}; myRec.forEach(r => { pt[r.product] = (pt[r.product] || 0) + r.saleQty; });
+      const entries = Object.entries(pt).sort((a, b) => b[1] - a[1]);
+      if (pieChartInst) { try { pieChartInst.destroy(); } catch (e) { } }
+      if (!entries.length) { document.getElementById('pieChart').innerHTML = ''; return; }
+      document.getElementById('pieChartMeta').textContent = `${entries.length} SKUs`;
+      pieChartInst = new ApexCharts(document.getElementById('pieChart'), { chart: { type: 'donut', height: 265, background: 'transparent', animations: { speed: 500 } }, series: entries.map(([, v]) => v), labels: entries.map(([p]) => p.length > 32 ? p.slice(0, 30) + '…' : p), colors: ['#c9942a', '#f0b840', '#2563eb', '#3b82f6', '#10b981', '#7c5cfc', '#f59e0b'], legend: { position: 'bottom', labels: { colors: '#9aa3bf' }, fontFamily: 'Mulish,sans-serif', fontSize: '11px' }, plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', color: '#9aa3bf', fontFamily: 'JetBrains Mono,monospace', formatter: w => w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString() } } } } }, stroke: { colors: ['#141720'] }, dataLabels: { enabled: true, style: { fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' }, dropShadow: { enabled: false } }, tooltip: { theme: 'dark', style: { fontFamily: 'JetBrains Mono,monospace' } }, theme: { mode: 'dark' } });
+      pieChartInst.render();
+    }
+
+    function renderGrowthChart(myRec, dates) {
+      if (growthChartInst) { try { growthChartInst.destroy(); } catch (e) { } }
+      if (!dates.length || !myRec.length) return;
+      const prods = [...new Set(myRec.map(r => r.product))];
+      const lkp = {}; myRec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
+      const series = prods.map(p => { let c = 0; return { name: p.length > 35 ? p.slice(0, 33) + '…' : p, data: dates.map(d => { c += (lkp[p]?.[d] || 0); return c; }) }; });
+      growthChartInst = new ApexCharts(document.getElementById('growthChart'), { chart: { type: 'area', height: 265, background: 'transparent', toolbar: { show: false }, animations: { speed: 500 } }, series, xaxis: { categories: dates.map(fmtD), labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } }, yaxis: { labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } }, colors: ['#c9942a', '#f0b840', '#2563eb', '#3b82f6', '#10b981', '#7c5cfc'], fill: { type: 'gradient', gradient: { shadeIntensity: .1, opacityFrom: .35, opacityTo: .04 } }, stroke: { curve: 'smooth', width: 2 }, legend: { labels: { colors: '#9aa3bf' }, fontFamily: 'Mulish,sans-serif', fontSize: '11px' }, tooltip: { theme: 'dark', style: { fontFamily: 'JetBrains Mono,monospace' } }, grid: { borderColor: '#2a2f45', strokeDashArray: 3 }, theme: { mode: 'dark' } });
+      growthChartInst.render();
+    }
+
+    // ══════════════════════════════════════════════════
+    // SEARCHABLE AUTOCOMPLETE COMPARISON ENGINE
+    // ══════════════════════════════════════════════════
+    const CMP_COLORS = ['#c9942a', '#2563eb', '#10b981', '#ef4444', '#7c5cfc', '#f0b840', '#3b82f6', '#34d399', '#fb923c', '#a78bfa'];
+
+    function getProductTotals() {
+      const rec = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+      const pt = {}; rec.forEach(r => { pt[r.product] = (pt[r.product] || 0) + r.saleQty; });
+      return Object.entries(pt).sort((a, b) => b[1] - a[1]).map(([p, q]) => ({ name: p, qty: q, isMy: isMyBrand(p) }));
+    }
+
+    function populateCmpDropdowns() { document.querySelectorAll('[data-ac-slot]').forEach(wrap => { const id = wrap.dataset.acSlot; _acBuild(id, getProductTotals(), document.getElementById('acIn_' + id)?.value || ''); }); }
+
+    function addCmpSlot() {
+      const id = 's' + (++acSlotCounter);
+      const row = document.getElementById('cmpSlotsRow');
+      const slotNum = row.querySelectorAll('.cmp-slot').length + 1;
+      const products = getProductTotals();
+      const slot = document.createElement('div');
+      slot.className = 'cmp-slot'; slot.id = 'cmpSlot_' + id;
+      slot.innerHTML = `${slotNum > 2 ? `<button class="cmp-remove" onclick="document.getElementById('cmpSlot_${id}').remove();_renumberSlots()">×</button>` : ''}
     <div class="cmp-slot-lbl">Product ${slotNum}</div>
     <div class="ac-wrap" data-ac-slot="${id}">
       <span class="ac-search-icon">🔍</span>
@@ -1004,110 +2653,137 @@ function addCmpSlot(){
       <div class="ac-drop" id="acDrop_${id}"></div>
     </div>
     <div class="ac-chip" id="acChip_${id}">✓ Selected</div>`;
-  slot.querySelector('.ac-input')._selVal='';
-  row.appendChild(slot);
-  _acBuild(id,products,'');
-}
+      slot.querySelector('.ac-input')._selVal = '';
+      row.appendChild(slot);
+      _acBuild(id, products, '');
+    }
 
-function _renumberSlots(){document.getElementById('cmpSlotsRow').querySelectorAll('.cmp-slot').forEach((s,i)=>{const lbl=s.querySelector('.cmp-slot-lbl');if(lbl)lbl.textContent='Product '+(i+1);});}
+    function _renumberSlots() { document.getElementById('cmpSlotsRow').querySelectorAll('.cmp-slot').forEach((s, i) => { const lbl = s.querySelector('.cmp-slot-lbl'); if (lbl) lbl.textContent = 'Product ' + (i + 1); }); }
 
-function _acBuild(id,products,q){
-  const drop=document.getElementById('acDrop_'+id);if(!drop)return;
-  const filtered=q?products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())):products;
-  if(!filtered.length){drop.innerHTML=`<div class="ac-none">No products match "${q}"</div>`;return;}
-  drop.innerHTML=filtered.slice(0,60).map(p=>`
+    function _acBuild(id, products, q) {
+      const drop = document.getElementById('acDrop_' + id); if (!drop) return;
+      const filtered = q ? products.filter(p => p.name.toLowerCase().includes(q.toLowerCase())) : products;
+      if (!filtered.length) { drop.innerHTML = `<div class="ac-none">No products match "${q}"</div>`; return; }
+      drop.innerHTML = filtered.slice(0, 60).map(p => `
     <div class="ac-opt" data-n="${encodeURIComponent(p.name)}" onmousedown="_acSelect('${id}','${encodeURIComponent(p.name)}')">
-      <span class="ac-dot" style="background:${p.isMy?'var(--gold)':'var(--border2)'};"></span>
-      <span class="ac-opt-name" title="${p.name}">${_hl(p.name,q)}</span>
+      <span class="ac-dot" style="background:${p.isMy ? 'var(--gold)' : 'var(--border2)'};"></span>
+      <span class="ac-opt-name" title="${p.name}">${_hl(p.name, q)}</span>
       <span class="ac-opt-qty">${p.qty.toLocaleString()}</span>
     </div>`).join('');
-}
+    }
 
-function _hl(text,q){if(!q)return text;const i=text.toLowerCase().indexOf(q.toLowerCase());if(i<0)return text;return text.slice(0,i)+`<strong style="color:var(--text)">${text.slice(i,i+q.length)}</strong>`+text.slice(i+q.length);}
+    function _hl(text, q) { if (!q) return text; const i = text.toLowerCase().indexOf(q.toLowerCase()); if (i < 0) return text; return text.slice(0, i) + `<strong style="color:var(--text)">${text.slice(i, i + q.length)}</strong>` + text.slice(i + q.length); }
 
-function _acOnInput(id){const inp=document.getElementById('acIn_'+id);if(!inp)return;inp._selVal='';document.getElementById('acChip_'+id)?.classList.remove('show');document.getElementById('acX_'+id)?.classList.toggle('show',!!inp.value);_acBuild(id,getProductTotals(),inp.value);_acOpen(id);}
+    function _acOnInput(id) { const inp = document.getElementById('acIn_' + id); if (!inp) return; inp._selVal = ''; document.getElementById('acChip_' + id)?.classList.remove('show'); document.getElementById('acX_' + id)?.classList.toggle('show', !!inp.value); _acBuild(id, getProductTotals(), inp.value); _acOpen(id); }
 
-function _acOpen(id){document.getElementById('acDrop_'+id)?.classList.add('open');}
-function _acBlur(id){setTimeout(()=>document.getElementById('acDrop_'+id)?.classList.remove('open'),200);}
-function _acSelect(id,enc){
-  const name=decodeURIComponent(enc);
-  const inp=document.getElementById('acIn_'+id);if(!inp)return;
-  inp.value=name;inp._selVal=name;
-  document.getElementById('acChip_'+id)?.classList.add('show');
-  document.getElementById('acX_'+id)?.classList.add('show');
-  document.getElementById('acDrop_'+id)?.classList.remove('open');
-}
-function _acClear(id){const inp=document.getElementById('acIn_'+id);if(!inp)return;inp.value='';inp._selVal='';document.getElementById('acChip_'+id)?.classList.remove('show');document.getElementById('acX_'+id)?.classList.remove('show');_acBuild(id,getProductTotals(),'');}
+    function _acOpen(id) { document.getElementById('acDrop_' + id)?.classList.add('open'); }
+    function _acBlur(id) { setTimeout(() => document.getElementById('acDrop_' + id)?.classList.remove('open'), 200); }
+    function _acSelect(id, enc) {
+      const name = decodeURIComponent(enc);
+      const inp = document.getElementById('acIn_' + id); if (!inp) return;
+      inp.value = name; inp._selVal = name;
+      document.getElementById('acChip_' + id)?.classList.add('show');
+      document.getElementById('acX_' + id)?.classList.add('show');
+      document.getElementById('acDrop_' + id)?.classList.remove('open');
+    }
+    function _acClear(id) { const inp = document.getElementById('acIn_' + id); if (!inp) return; inp.value = ''; inp._selVal = ''; document.getElementById('acChip_' + id)?.classList.remove('show'); document.getElementById('acX_' + id)?.classList.remove('show'); _acBuild(id, getProductTotals(), ''); }
 
-function _getSelectedProds(){
-  const vals=[];
-  document.querySelectorAll('.ac-input').forEach(inp=>{const v=inp._selVal||'';if(v&&!vals.includes(v))vals.push(v);});
-  return vals;
-}
+    function _getSelectedProds() {
+      const vals = [];
+      document.querySelectorAll('.ac-input').forEach(inp => { const v = inp._selVal || ''; if (v && !vals.includes(v)) vals.push(v); });
+      return vals;
+    }
 
-function runCompare(){
-  const selected=_getSelectedProds();
-  if(selected.length<2){toast('Select at least 2 products to compare','err');return;}
-  const dates=[...new Set(dashRec.map(r=>r.date))].sort();
-  const lkp={};selected.forEach(p=>{lkp[p]={};});
-  dashRec.forEach(r=>{if(lkp[r.product]!==undefined)lkp[r.product][r.date]=(lkp[r.product][r.date]||0)+r.saleQty;});
-  const totals=selected.map(p=>Object.values(lkp[p]).reduce((s,v)=>s+v,0));
-  if(cmpChartInst){try{cmpChartInst.destroy();}catch(e){}}
-  const series=selected.map((p,ci)=>({name:p.length>35?p.slice(0,33)+'…':p,data:dates.map(d=>lkp[p][d]||0)}));
-  cmpChartInst=new ApexCharts(document.getElementById('cmpChart'),{chart:{type:'bar',height:290,background:'transparent',toolbar:{show:false},animations:{speed:400}},series,xaxis:{categories:dates.map(fmtD),labels:{style:{colors:'#5a6380',fontFamily:'JetBrains Mono,monospace',fontSize:'10px'}}},yaxis:{labels:{style:{colors:'#5a6380',fontFamily:'JetBrains Mono,monospace',fontSize:'10px'}}},colors:CMP_COLORS.slice(0,selected.length),plotOptions:{bar:{columnWidth:'70%',borderRadius:3}},dataLabels:{enabled:false},legend:{labels:{colors:'#9aa3bf'},fontFamily:'Mulish,sans-serif',fontSize:'11px'},tooltip:{theme:'dark',style:{fontFamily:'JetBrains Mono,monospace'}},grid:{borderColor:'#2a2f45',strokeDashArray:3},theme:{mode:'dark'}});
-  cmpChartInst.render();
-  document.getElementById('cmpLegend').innerHTML=selected.map((p,ci)=>`<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--text2);"><div style="width:11px;height:11px;border-radius:3px;background:${CMP_COLORS[ci]};flex-shrink:0;"></div><span title="${p}">${p.length>42?p.slice(0,40)+'…':p}</span><span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text3);">(${totals[ci].toLocaleString()})</span></div>`).join('');
-  const wi=totals.indexOf(Math.max(...totals));
-  const thead=`<thead><tr><th>Date</th>${selected.map((p,ci)=>`<th style="color:${CMP_COLORS[ci]}">${p.length>20?p.slice(0,18)+'…':p}</th>`).join('')}<th>Winner</th></tr></thead>`;
-  const tbody=dates.map(d=>{const vals=selected.map(p=>lkp[p][d]||0);const maxD=Math.max(...vals);const cells=vals.map((v,ci)=>`<td class="${v===maxD&&maxD>0?'winner':v===0?'zv':''}">${v.toLocaleString()}</td>`).join('');const wii=vals.indexOf(maxD);return`<tr><td>${fmtD(d)}</td>${cells}<td class="winner">${maxD>0?(selected[wii].length>18?selected[wii].slice(0,16)+'…':selected[wii]):'—'}</td></tr>`;}).join('');
-  const totRow=`<tr style="background:#0e1530;font-weight:700;"><td>TOTAL</td>${totals.map((t,ci)=>`<td class="${ci===wi?'winner':''}">${t.toLocaleString()}</td>`).join('')}<td class="winner">${selected[wi].length>18?selected[wi].slice(0,16)+'…':selected[wi]}</td></tr>`;
-  document.getElementById('cmpTable').innerHTML=thead+`<tbody>${tbody}${totRow}</tbody>`;
-  document.getElementById('compareBody').classList.add('vis');
-}
+    function runCompare() {
+      const selected = _getSelectedProds();
+      if (selected.length < 2) { toast('Select at least 2 products to compare', 'err'); return; }
 
-function clearCompare(){document.getElementById('cmpSlotsRow').innerHTML='';acSlotCounter=0;document.getElementById('compareBody').classList.remove('vis');if(cmpChartInst){try{cmpChartInst.destroy();}catch(e){}cmpChartInst=null;}addCmpSlot();addCmpSlot();}
+      // Use month-filtered records
+      const rec = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+      const monthLabel = dashMonthFilter ? fmtMonthKey(dashMonthFilter) : 'All Time';
 
-// ─── EXPORTS ───────────────────────────────────────
-function exportDashCSV(){
-  const rec=dashDateFilter?dashRec.filter(r=>r.date===dashDateFilter):dashRec;
-  if(!rec.length){toast('No data','err');return;}
-  const dates=[...new Set(rec.map(r=>r.date))].sort();const myP=[...new Set(rec.filter(r=>r.isMyBrand).map(r=>r.product))];const cP=[...new Set(rec.filter(r=>!r.isMyBrand).map(r=>r.product))].sort();const prods=[...myP,...cP];
-  const lkp={};rec.forEach(r=>{if(!lkp[r.product])lkp[r.product]={};lkp[r.product][r.date]=(lkp[r.product][r.date]||0)+r.saleQty;});
-  const h=['"DATE"',...prods.map(p=>`"${p}"`),'TOTAL'].join(',');
-  const rows=dates.map(d=>{const vals=prods.map(p=>lkp[p]?.[d]||0);return[fmtD(d),...vals,vals.reduce((s,v)=>s+v,0)].join(',');});
-  const tr=['TOTAL',...prods.map(p=>Object.values(lkp[p]||{}).reduce((s,v)=>s+v,0)),rec.reduce((s,r)=>s+r.saleQty,0)].join(',');
-  dl(new Blob([[h,...rows,tr].join('\n')],{type:'text/csv'}),'whisky_dashboard_'+today()+'.csv');toast('CSV exported!','ok');
-}
+      // Aggregate totals per product (not day-wise)
+      const totals = selected.map(p => rec.filter(r => r.product === p).reduce((s, r) => s + r.saleQty, 0));
 
-function exportDashPDF(){
-  const rec=dashDateFilter?dashRec.filter(r=>r.date===dashDateFilter):dashRec;
-  if(!rec.length){toast('No data','err');return;}
-  const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const W=doc.internal.pageSize.width,H=doc.internal.pageSize.height;
-  const dates=[...new Set(rec.map(r=>r.date))].sort();const myP=[...new Set(rec.filter(r=>r.isMyBrand).map(r=>r.product))];const cP=[...new Set(rec.filter(r=>!r.isMyBrand).map(r=>r.product))].sort();const prods=[...myP,...cP];
-  const lkp={};rec.forEach(r=>{if(!lkp[r.product])lkp[r.product]={};lkp[r.product][r.date]=(lkp[r.product][r.date]||0)+r.saleQty;});
-  doc.setFillColor(13,15,20);doc.rect(0,0,W,14,'F');doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(240,184,64);doc.text('Whisky Intelligence — Sales Dashboard v3',14,9);doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(154,163,191);doc.text(`Generated: ${new Date().toLocaleString('en-IN')}  |  Period: ${fmtD(dates[0])} – ${fmtD(dates[dates.length-1])}  |  Products: ${prods.length}`,14,13);
-  const shortP=prods.map(p=>p.length>18?p.slice(0,16)+'…':p);const head=[['DATE',...shortP,'TOTAL']];
-  const body=dates.map(d=>{const vals=prods.map(p=>{const v=lkp[p]?.[d]||0;return v===0?'0':v.toLocaleString();});const rt=prods.reduce((s,p)=>s+(lkp[p]?.[d]||0),0);return[fmtD(d),...vals,rt.toLocaleString()];});
-  body.push(['TOTAL',...prods.map(p=>{const v=Object.values(lkp[p]||{}).reduce((s,x)=>s+x,0);return v===0?'0':v.toLocaleString();}),rec.reduce((s,r)=>s+r.saleQty,0).toLocaleString()]);
-  const cs={};myP.forEach((p,i)=>{cs[i+1]={fillColor:[40,25,0]};});cs[prods.length+1]={fillColor:[14,26,53],fontStyle:'bold',textColor:[100,160,255]};
-  doc.autoTable({head,body,startY:18,styles:{fontSize:6.5,cellPadding:1.8,halign:'center',lineColor:[42,47,69],lineWidth:.2,font:'courier',textColor:[200,210,230],fillColor:[20,23,32]},headStyles:{fillColor:[28,32,48],textColor:[240,184,64],fontStyle:'bold',fontSize:6.5},columnStyles:{0:{halign:'left',fontStyle:'bold',fillColor:[20,23,32]},...cs},didParseCell(d){const last=body.length-1;if(d.row.index===last){d.cell.styles.fillColor=[14,21,48];d.cell.styles.textColor=[100,160,255];d.cell.styles.fontStyle='bold';}},margin:{left:8,right:8}});
-  doc.save('whisky_dashboard_'+today()+'.pdf');toast('PDF exported!','ok');
-}
+      if (cmpChartInst) { try { cmpChartInst.destroy(); } catch (e) { } }
 
-// ─── UTILS ─────────────────────────────────────────
-function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
-function prog(pct,msg=''){const w=document.getElementById('pw'),f=document.getElementById('pf'),l=document.getElementById('pl');if(pct<=0){w.style.display='none';return;}w.style.display='block';f.style.width=pct+'%';l.textContent=msg;}
-function toast(msg,type='ok'){const el=document.getElementById('toast');document.getElementById('tMsg').textContent=msg;document.getElementById('tIcon').textContent=type==='err'?'✕':type==='warn'?'⚠':'✓';el.className='toast '+type;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3800);}
-function log(msg,type=''){const el=document.getElementById('logEl');el.classList.add('vis');const d=document.createElement('div');d.className=type==='w'?'lw':type==='e'?'le':'';d.textContent=msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
-function clearLog(){const el=document.getElementById('logEl');el.innerHTML='';el.classList.remove('vis');}
+      // Single bar per product (monthly total)
+      const series = [{ name: 'Total Qty', data: totals }];
+      cmpChartInst = new ApexCharts(document.getElementById('cmpChart'), {
+        chart: { type: 'bar', height: 290, background: 'transparent', toolbar: { show: false }, animations: { speed: 400 } },
+        series,
+        xaxis: { categories: selected.map(p => p.length > 28 ? p.slice(0, 26) + '…' : p), labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' }, rotate: -15 } },
+        yaxis: { labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } },
+        colors: CMP_COLORS.slice(0, selected.length),
+        plotOptions: { bar: { distributed: true, columnWidth: '55%', borderRadius: 4 } },
+        dataLabels: { enabled: true, style: { fontFamily: 'JetBrains Mono,monospace', fontSize: '11px' }, formatter: v => v.toLocaleString() },
+        legend: { show: false },
+        tooltip: { theme: 'dark', style: { fontFamily: 'JetBrains Mono,monospace' } },
+        grid: { borderColor: '#2a2f45', strokeDashArray: 3 },
+        theme: { mode: 'dark' },
+        title: { text: `Monthly Totals — ${monthLabel}`, style: { color: '#9aa3bf', fontFamily: 'Syne,sans-serif', fontSize: '11px' } }
+      });
+      cmpChartInst.render();
 
-// ─── INIT ──────────────────────────────────────────
-window.addEventListener('load',()=>{
-  addCmpSlot();addCmpSlot();
-  if(window.fbReady){loadDashboardFromFirebase();populateDelDates();}
-});
-window.addEventListener('fbready',()=>{loadDashboardFromFirebase();populateDelDates();});
-</script>
+      const wi = totals.indexOf(Math.max(...totals));
+      document.getElementById('cmpLegend').innerHTML = selected.map((p, ci) => `<div style="display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--text2);"><div style="width:11px;height:11px;border-radius:3px;background:${CMP_COLORS[ci]};flex-shrink:0;"></div><span title="${p}">${p.length > 42 ? p.slice(0, 40) + '…' : p}</span><span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text3);">(${totals[ci].toLocaleString()})</span></div>`).join('');
+
+      // Summary table (one row per product, monthly total)
+      const thead = `<thead><tr><th style="text-align:left;">Product</th><th>Total Qty (${monthLabel})</th><th>Winner</th></tr></thead>`;
+      const tbody = selected.map((p, ci) => {
+        const isWin = ci === wi && totals[ci] > 0;
+        return `<tr><td style="text-align:left;color:${CMP_COLORS[ci]};font-family:'Mulish',sans-serif;">${p.length > 50 ? p.slice(0,48)+'…' : p}</td><td class="${isWin ? 'winner' : totals[ci]===0 ? 'zv' : ''}">${totals[ci].toLocaleString()}</td><td>${isWin ? `<span class="winner">🏆 Winner</span>` : '—'}</td></tr>`;
+      }).join('');
+      document.getElementById('cmpTable').innerHTML = thead + `<tbody>${tbody}</tbody>`;
+      document.getElementById('compareBody').classList.add('vis');
+    }
+
+    function clearCompare() { document.getElementById('cmpSlotsRow').innerHTML = ''; acSlotCounter = 0; document.getElementById('compareBody').classList.remove('vis'); if (cmpChartInst) { try { cmpChartInst.destroy(); } catch (e) { } cmpChartInst = null; } addCmpSlot(); addCmpSlot(); }
+
+    // ─── EXPORTS ───────────────────────────────────────
+    function exportDashCSV() {
+      const base = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+      const rec = dashDateFilter ? base.filter(r => r.date === dashDateFilter) : base;
+      if (!rec.length) { toast('No data', 'err'); return; }
+      const dates = [...new Set(rec.map(r => r.date))].sort(); const myP = [...new Set(rec.filter(r => r.isMyBrand).map(r => r.product))]; const cP = [...new Set(rec.filter(r => !r.isMyBrand).map(r => r.product))].sort(); const prods = [...myP, ...cP];
+      const lkp = {}; rec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
+      const h = ['"DATE"', ...prods.map(p => `"${p}"`), 'TOTAL'].join(',');
+      const rows = dates.map(d => { const vals = prods.map(p => lkp[p]?.[d] || 0); return [fmtD(d), ...vals, vals.reduce((s, v) => s + v, 0)].join(','); });
+      const tr = ['TOTAL', ...prods.map(p => Object.values(lkp[p] || {}).reduce((s, v) => s + v, 0)), rec.reduce((s, r) => s + r.saleQty, 0)].join(',');
+      dl(new Blob([[h, ...rows, tr].join('\n')], { type: 'text/csv' }), 'whisky_dashboard_' + today() + '.csv'); toast('CSV exported!', 'ok');
+    }
+
+    function exportDashPDF() {
+      const base = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+      const rec = dashDateFilter ? base.filter(r => r.date === dashDateFilter) : base;
+      if (!rec.length) { toast('No data', 'err'); return; }
+      const { jsPDF } = window.jspdf; const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const W = doc.internal.pageSize.width, H = doc.internal.pageSize.height;
+      const dates = [...new Set(rec.map(r => r.date))].sort(); const myP = [...new Set(rec.filter(r => r.isMyBrand).map(r => r.product))]; const cP = [...new Set(rec.filter(r => !r.isMyBrand).map(r => r.product))].sort(); const prods = [...myP, ...cP];
+      const lkp = {}; rec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
+      doc.setFillColor(13, 15, 20); doc.rect(0, 0, W, 14, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(240, 184, 64); doc.text('Whisky Intelligence — Sales Dashboard v3', 14, 9); doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(154, 163, 191); doc.text(`Generated: ${new Date().toLocaleString('en-IN')}  |  Period: ${fmtD(dates[0])} – ${fmtD(dates[dates.length - 1])}  |  Products: ${prods.length}`, 14, 13);
+      const shortP = prods.map(p => p.length > 18 ? p.slice(0, 16) + '…' : p); const head = [['DATE', ...shortP, 'TOTAL']];
+      const body = dates.map(d => { const vals = prods.map(p => { const v = lkp[p]?.[d] || 0; return v === 0 ? '0' : v.toLocaleString(); }); const rt = prods.reduce((s, p) => s + (lkp[p]?.[d] || 0), 0); return [fmtD(d), ...vals, rt.toLocaleString()]; });
+      body.push(['TOTAL', ...prods.map(p => { const v = Object.values(lkp[p] || {}).reduce((s, x) => s + x, 0); return v === 0 ? '0' : v.toLocaleString(); }), rec.reduce((s, r) => s + r.saleQty, 0).toLocaleString()]);
+      const cs = {}; myP.forEach((p, i) => { cs[i + 1] = { fillColor: [40, 25, 0] }; }); cs[prods.length + 1] = { fillColor: [14, 26, 53], fontStyle: 'bold', textColor: [100, 160, 255] };
+      doc.autoTable({ head, body, startY: 18, styles: { fontSize: 6.5, cellPadding: 1.8, halign: 'center', lineColor: [42, 47, 69], lineWidth: .2, font: 'courier', textColor: [200, 210, 230], fillColor: [20, 23, 32] }, headStyles: { fillColor: [28, 32, 48], textColor: [240, 184, 64], fontStyle: 'bold', fontSize: 6.5 }, columnStyles: { 0: { halign: 'left', fontStyle: 'bold', fillColor: [20, 23, 32] }, ...cs }, didParseCell(d) { const last = body.length - 1; if (d.row.index === last) { d.cell.styles.fillColor = [14, 21, 48]; d.cell.styles.textColor = [100, 160, 255]; d.cell.styles.fontStyle = 'bold'; } }, margin: { left: 8, right: 8 } });
+      doc.save('whisky_dashboard_' + today() + '.pdf'); toast('PDF exported!', 'ok');
+    }
+
+    // ─── UTILS ─────────────────────────────────────────
+    function dl(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); }
+    function prog(pct, msg = '') { const w = document.getElementById('pw'), f = document.getElementById('pf'), l = document.getElementById('pl'); if (pct <= 0) { w.style.display = 'none'; return; } w.style.display = 'block'; f.style.width = pct + '%'; l.textContent = msg; }
+    function toast(msg, type = 'ok') { const el = document.getElementById('toast'); document.getElementById('tMsg').textContent = msg; document.getElementById('tIcon').textContent = type === 'err' ? '✕' : type === 'warn' ? '⚠' : '✓'; el.className = 'toast ' + type; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3800); }
+    function log(msg, type = '') { const el = document.getElementById('logEl'); el.classList.add('vis'); const d = document.createElement('div'); d.className = type === 'w' ? 'lw' : type === 'e' ? 'le' : ''; d.textContent = msg; el.appendChild(d); el.scrollTop = el.scrollHeight; }
+    function clearLog() { const el = document.getElementById('logEl'); el.innerHTML = ''; el.classList.remove('vis'); }
+
+    // ─── INIT ──────────────────────────────────────────
+    window.addEventListener('load', () => {
+      addCmpSlot(); addCmpSlot();
+      if (window.fbReady) { loadDashboardFromFirebase(); populateDelDates(); }
+    });
+    window.addEventListener('fbready', () => { loadDashboardFromFirebase(); populateDelDates(); });
+  </script>
 </body>
+
 </html>
