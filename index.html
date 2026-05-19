@@ -38,6 +38,16 @@
     window.fbReady = true;
     window.dispatchEvent(new Event('fbready'));
   </script>
+  <script>
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem('whiskyDashboardTheme');
+        document.documentElement.setAttribute('data-theme', savedTheme === 'light' ? 'light' : 'dark');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <link
     href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Mulish:wght@300;400;500;600;700&display=swap"
     rel="stylesheet" />
@@ -64,6 +74,38 @@
       --text: #e8eaf2;
       --text2: #9aa3bf;
       --text3: #5a6380;
+      --sticky-surface: #1a1e2d;
+      --my-col-bg: #2d1f00;
+      --total-col-bg: #0e1a35;
+      --shadow-soft: rgba(0, 0, 0, 0.3);
+    }
+
+    html[data-theme="light"] {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface2: #eef3f9;
+      --surface3: #e3eaf3;
+      --border: #d7dfeb;
+      --border2: #b7c4d6;
+      --gold: #b7791f;
+      --gold2: #d6921e;
+      --gold-glow: rgba(183, 121, 31, 0.14);
+      --blue: #2563eb;
+      --blue2: #1d4ed8;
+      --blue-glow: rgba(37, 99, 235, 0.12);
+      --green: #059669;
+      --green-glow: rgba(5, 150, 105, 0.12);
+      --red: #dc2626;
+      --red-glow: rgba(220, 38, 38, 0.1);
+      --amber: #d97706;
+      --purple: #6d5dfc;
+      --text: #172033;
+      --text2: #40506a;
+      --text3: #748096;
+      --sticky-surface: #f8fafd;
+      --my-col-bg: #fff7e6;
+      --total-col-bg: #eaf2ff;
+      --shadow-soft: rgba(35, 48, 75, 0.12);
     }
 
     * {
@@ -78,6 +120,24 @@
       color: var(--text);
       font-size: 13px;
       min-height: 100vh;
+      transition: background-color .25s ease, color .25s ease;
+    }
+
+    body,
+    .topnav,
+    .sidebar-card,
+    .preview-card,
+    .dash-card,
+    .stat-card,
+    .pivot-card,
+    .compare-section,
+    .month-bar,
+    .btn,
+    table th,
+    table td,
+    input,
+    select {
+      transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
     }
 
     /* NAV */
@@ -150,7 +210,7 @@
     .nav-tab.active {
       background: var(--surface3);
       color: var(--text);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 8px var(--shadow-soft);
     }
 
     .nav-tab.active.admin {
@@ -165,6 +225,55 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text2);
+      border-radius: 999px;
+      padding: 5px 10px 5px 6px;
+      font-family: 'Syne', sans-serif;
+      font-size: .68rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 6px 18px var(--shadow-soft);
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--border2);
+      color: var(--text);
+    }
+
+    .theme-toggle-track {
+      width: 34px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      display: inline-flex;
+      align-items: center;
+      padding: 2px;
+      position: relative;
+    }
+
+    .theme-toggle-knob {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
+      transform: translateX(14px);
+      transition: transform .25s ease, background .25s ease;
+      box-shadow: 0 2px 8px var(--shadow-soft);
+    }
+
+    html[data-theme="light"] .theme-toggle-knob {
+      transform: translateX(0);
+      background: linear-gradient(135deg, #ffffff, #f59e0b);
     }
 
     .fb-status {
@@ -865,6 +974,115 @@
       background: var(--surface2);
     }
 
+    .analysis-card .dash-card-hdr {
+      background: linear-gradient(135deg, var(--surface2), var(--surface));
+    }
+
+    .analysis-actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .analysis-table-wrap {
+      overflow: auto;
+      max-height: 420px;
+      border-top: 1px solid var(--border);
+    }
+
+    .analysis-tbl {
+      width: 100%;
+      min-width: 1380px;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .72rem;
+    }
+
+    .analysis-tbl th,
+    .analysis-tbl td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 9px 10px;
+      vertical-align: middle;
+    }
+
+    .analysis-tbl thead th {
+      position: sticky;
+      top: 0;
+      z-index: 8;
+      background: var(--surface3);
+      color: var(--text2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .6rem;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+      line-height: 1.28;
+      white-space: normal;
+    }
+
+    .analysis-tbl thead th:first-child,
+    .analysis-tbl tbody td:first-child,
+    .analysis-tbl tfoot td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 9;
+      min-width: 104px;
+      background: var(--sticky-surface);
+      text-align: left;
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .analysis-tbl thead th:first-child {
+      z-index: 10;
+    }
+
+    .analysis-tbl .product-head {
+      min-width: 146px;
+      max-width: 180px;
+    }
+
+    .analysis-tbl .qty-cell {
+      color: var(--text2);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .analysis-tbl .total-col {
+      min-width: 104px;
+      background: var(--total-col-bg);
+      color: var(--blue2);
+      font-weight: 800;
+    }
+
+    .analysis-tbl tbody tr:hover td {
+      background: var(--surface2);
+    }
+
+    .analysis-tbl tfoot td {
+      background: var(--my-col-bg);
+      color: var(--gold2);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      text-align: right;
+      border-top: 1px solid var(--border2);
+    }
+
+    .analysis-tbl tfoot td:first-child {
+      color: var(--gold2);
+      text-align: left;
+    }
+
+    .analysis-empty {
+      text-align: center !important;
+      color: var(--text3) !important;
+      padding: 24px !important;
+      font-family: 'Mulish', sans-serif !important;
+      font-weight: 600 !important;
+    }
+
     .qty-cell {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 600;
@@ -1145,16 +1363,16 @@
       position: sticky;
       left: 0;
       z-index: 11;
-      background: #1a1e2d;
+      background: var(--sticky-surface);
     }
 
     .ptbl thead th.mbh {
-      background: #2d1f00;
+      background: var(--my-col-bg);
       color: var(--gold2);
     }
 
     .ptbl thead th.toth {
-      background: #0e1a35;
+      background: var(--total-col-bg);
       color: var(--blue2);
     }
 
@@ -1558,6 +1776,8 @@
 
       .nav-right {
         order: 2;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
 
       .panel {
@@ -1605,6 +1825,20 @@
 
       .brands-tbl {
         font-size: .7rem;
+      }
+
+      .analysis-table-wrap {
+        max-height: 55vh;
+      }
+
+      .analysis-tbl {
+        min-width: 1180px;
+        font-size: .68rem;
+      }
+
+      .analysis-tbl th,
+      .analysis-tbl td {
+        padding: 8px 9px;
       }
 
       .stat-val {
@@ -1801,6 +2035,10 @@
       <button class="nav-tab dash" onclick="switchPanel('dash')">📊 Dashboard</button>
     </div>
     <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Switch color theme">
+        <span class="theme-toggle-track"><span class="theme-toggle-knob"></span></span>
+        <span class="theme-toggle-text" id="themeToggleText">Dark</span>
+      </button>
       <span class="fb-status" id="fbStatus">🔥 Firebase</span>
       <button class="btn btn-ghost" style="font-size:.7rem;padding:5px 12px;" onclick="loadDashboardFromFirebase()">↻
         Sync</button>
@@ -2035,6 +2273,39 @@
         </div>
       </div>
 
+      <div class="dash-card full analysis-card" style="margin-bottom:18px;">
+        <div class="dash-card-hdr">
+          <div class="dash-card-title">Competitive &amp; Our Product Analyse</div>
+          <div class="analysis-actions">
+            <div class="dash-card-meta" id="competitiveMeta">—</div>
+            <button class="btn btn-ghost" style="font-size:.67rem;padding:4px 9px;" onclick="exportCompetitiveExcel()">Export Excel</button>
+          </div>
+        </div>
+        <div class="analysis-table-wrap" id="competitiveAnalysisWrap">
+          <table class="analysis-tbl">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th class="product-head">Secret Malt</th>
+                <th class="product-head">John Martin Premium Whiskey 180 ML</th>
+                <th class="product-head">Silver Deluxe Whiskey 180 ML</th>
+                <th class="product-head">Krimps Special Whiskey 180 ML</th>
+                <th class="product-head">Royals Special Premium Whiskey 180 ML</th>
+                <th class="product-head">Lord John Deluxe Whiskey 180 ML</th>
+                <th class="product-head">Prince Jon Rare Whiskey 180 ML</th>
+                <th class="product-head">Silver&rsquo;s Special Reserve 180 ML</th>
+                <th class="total-col">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="analysis-empty" colspan="10">No data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- SEARCHABLE COMPARISON -->
       <div class="compare-section">
         <div class="compare-hdr">
@@ -2166,6 +2437,16 @@
     const DELETE_PIN = '63'; // ← Secret PIN for deletion
 
     const MY_BRAND_KEYS = ['john martin premium whisky 180', 'john martin premium whisky 750', 'john martin premium whisky 2', 'john martin secret malt', 'silvers deluxe whisky', 'silver deluxe whisky', 'silvers special reserve', 'silver special reserve'];
+    const COMPETITIVE_PRODUCT_COLUMNS = [
+      { label: 'Secret Malt', aliases: ['secret malt', 'john martin secret malt'] },
+      { label: 'John Martin Premium Whiskey 180 ML', aliases: ['john martin premium whiskey 180', 'john martin premium whisky 180'] },
+      { label: 'Silver Deluxe Whiskey 180 ML', aliases: ['silver deluxe whiskey 180', 'silver deluxe whisky 180', 'silvers deluxe whiskey 180', 'silvers deluxe whisky 180', 'silver deluxe whiskey', 'silver deluxe whisky', 'silvers deluxe whiskey', 'silvers deluxe whisky'] },
+      { label: 'Krimps Special Whiskey 180 ML', aliases: ['krimps special whiskey 180', 'krimps special whisky 180', 'krimps special whiskey', 'krimps special whisky'] },
+      { label: 'Royals Special Premium Whiskey 180 ML', aliases: ['royals special premium whiskey 180', 'royals special premium whisky 180', 'royal special premium whiskey 180', 'royal special premium whisky 180', 'royals special premium whiskey', 'royals special premium whisky'] },
+      { label: 'Lord John Deluxe Whiskey 180 ML', aliases: ['lord john deluxe whiskey 180', 'lord john deluxe whisky 180', 'lord john deluxe whiskey', 'lord john deluxe whisky'] },
+      { label: 'Prince Jon Rare Whiskey 180 ML', aliases: ['prince jon rare whiskey 180', 'prince jon rare whisky 180', 'prince john rare whiskey 180', 'prince john rare whisky 180', 'prince jon rare whiskey', 'prince jon rare whisky'] },
+      { label: 'Silver\u2019s Special Reserve 180 ML', aliases: ['silvers special reserve 180', 'silver special reserve 180', 'silvers special reserve', 'silver special reserve'] }
+    ];
     const VALID_SIZES = /\b(180|375|750|1000|2000|500|350|90)\s*m?l?\b|\b[12]\s*l\b/i;
     const WHISKY_RE = /whis[kk]e?y/i;
     const SKIP_SET = new Set(['total', 'grand total', 'sub total', 'item name', 'item group', 'product', 's.no', 'sr.no', 'srno', 'serial no', 'opening', 'closing', 'in stock', 'stock qty', 'quantity in stock', 'balance', 'opening stock', 'closing stock', 'current stock', 'bal qty', 'qty in stock', 'balance qty', 'sale qty', 'sale quantity', 'item code', 'description', 'particulars', 'sl no', 'sl.no', 'no.', 'unit', 'rate', 'amount', 'name', 'brand', 'item']);
@@ -2173,6 +2454,11 @@
     const isMyBrand = n => MY_BRAND_KEYS.some(k => n.toLowerCase().includes(k));
     const isSkip = n => { const l = n.toLowerCase().trim(); if (SKIP_SET.has(l)) return true; if (SKIP_PRE.some(p => l.startsWith(p))) return true; if (/^\d+\.?$/.test(l)) return true; if (l.length < 7) return true; return false; };
     const isValidProd = name => { const l = name.toLowerCase(); return MY_BRAND_KEYS.some(k => l.includes(k)) || WHISKY_RE.test(l); };
+    const normalizeProductName = name => String(name || '').toLowerCase().replace(/[\u2018\u2019'`]/g, '').replace(/\bwhisky\b/g, 'whiskey').replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const matchesAnalysisProduct = (product, col) => {
+      const cleanProduct = normalizeProductName(product);
+      return col.aliases.some(alias => cleanProduct.includes(normalizeProductName(alias)));
+    };
 
     // ─── STATE ─────────────────────────────────────────
     let adminRec = []; // {id,date,product,saleQty,isMyBrand}
@@ -2182,6 +2468,41 @@
     let cmpChartInst = null, pieChartInst = null, growthChartInst = null;
     let acSlotCounter = 0;
     let pendingDelDate = '';
+
+    // ─── THEME ─────────────────────────────────────────
+    function currentTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    }
+
+    function applyTheme(theme, persist = false) {
+      const nextTheme = theme === 'light' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      const label = document.getElementById('themeToggleText');
+      if (label) label.textContent = nextTheme === 'light' ? 'Light' : 'Dark';
+      if (persist) {
+        try { localStorage.setItem('whiskyDashboardTheme', nextTheme); } catch (e) { }
+      }
+    }
+
+    function toggleTheme() {
+      applyTheme(currentTheme() === 'light' ? 'dark' : 'light', true);
+      if (dashRec.length) renderDashboard();
+      if (document.getElementById('compareBody')?.classList.contains('vis') && _getSelectedProds().length >= 2) runCompare();
+    }
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function chartTheme() {
+      return {
+        mode: currentTheme() === 'light' ? 'light' : 'dark',
+        text: cssVar('--text2') || '#9aa3bf',
+        muted: cssVar('--text3') || '#5a6380',
+        border: cssVar('--border') || '#2a2f45',
+        surface: cssVar('--surface') || '#141720'
+      };
+    }
 
     // ─── PANEL ─────────────────────────────────────────
     function switchPanel(name) {
@@ -2570,7 +2891,7 @@
       const dates = [...new Set(rec.map(r => r.date))].sort();
       document.getElementById('dateNav').innerHTML = `<div class="date-chip all ${dashDateFilter === '' ? 'active' : ''}" onclick="filterDashDate('')">All Dates</div>` + dates.map(d => `<div class="date-chip ${dashDateFilter === d ? 'active' : ''}" onclick="filterDashDate('${d}')">${fmtD(d)}</div>`).join('');
       const btn = document.getElementById('dashDelBtn'); if (btn) btn.style.display = dashRec.length ? 'block' : 'none';
-      renderMyBrandsTable(myRec); renderPivotDash(); renderPieChart(myRec); renderGrowthChart(myRec, dates);
+      renderMyBrandsTable(myRec); renderCompetitiveAnalysisTable(rec); renderPivotDash(); renderPieChart(myRec); renderGrowthChart(myRec, dates);
     }
 
     function filterDashDate(d) {
@@ -2584,6 +2905,44 @@
       const sorted = Object.entries(pt).sort((a, b) => b[1] - a[1]); const maxQ = sorted[0]?.[1] || 1; const grand = sorted.reduce((s, [, v]) => s + v, 0);
       document.getElementById('myBrandsMeta').textContent = `${sorted.length} SKUs · ${grand.toLocaleString()} total`;
       document.getElementById('myBrandsTbody').innerHTML = sorted.length ? sorted.map(([p, q], i) => `<tr><td class="rank-cell">${i + 1}</td><td style="font-weight:600;color:var(--text);">${p.length > 55 ? p.slice(0, 53) + '…' : p}</td><td class="qty-cell">${q.toLocaleString()}</td><td class="qty-cell" style="color:var(--text3);">${grand ? (q / grand * 100).toFixed(1) + '%' : '—'}</td><td><div class="bar-mini" style="width:${Math.round(q / maxQ * 100)}%"></div></td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:22px;color:var(--text3);">No data</td></tr>';
+    }
+
+    function getCompetitiveAnalysisData(rec) {
+      const dates = [...new Set(rec.map(r => r.date))].filter(Boolean).sort();
+      const byDate = {};
+      dates.forEach(d => { byDate[d] = Array(COMPETITIVE_PRODUCT_COLUMNS.length).fill(0); });
+      rec.forEach(r => {
+        const idx = COMPETITIVE_PRODUCT_COLUMNS.findIndex(col => matchesAnalysisProduct(r.product, col));
+        if (idx < 0 || !r.date) return;
+        if (!byDate[r.date]) byDate[r.date] = Array(COMPETITIVE_PRODUCT_COLUMNS.length).fill(0);
+        byDate[r.date][idx] += Number(r.saleQty) || 0;
+      });
+      const rows = dates.map(date => {
+        const values = byDate[date] || Array(COMPETITIVE_PRODUCT_COLUMNS.length).fill(0);
+        return { date, values, total: values.reduce((s, v) => s + v, 0) };
+      });
+      const colTotals = COMPETITIVE_PRODUCT_COLUMNS.map((_, idx) => rows.reduce((s, row) => s + row.values[idx], 0));
+      const grand = rows.reduce((s, row) => s + row.total, 0);
+      return { rows, colTotals, grand };
+    }
+
+    function renderCompetitiveAnalysisTable(rec) {
+      const wrap = document.getElementById('competitiveAnalysisWrap');
+      const meta = document.getElementById('competitiveMeta');
+      if (!wrap || !meta) return;
+      const { rows, colTotals, grand } = getCompetitiveAnalysisData(rec);
+      meta.textContent = `${rows.length} date(s) · ${grand.toLocaleString()} total`;
+      const headers = COMPETITIVE_PRODUCT_COLUMNS.map(col => `<th class="product-head">${escapeHtml(col.label)}</th>`).join('');
+      if (!rows.length) {
+        wrap.innerHTML = `<table class="analysis-tbl"><thead><tr><th>Date</th>${headers}<th class="total-col">TOTAL</th></tr></thead><tbody><tr><td class="analysis-empty" colspan="${COMPETITIVE_PRODUCT_COLUMNS.length + 2}">No data</td></tr></tbody></table>`;
+        return;
+      }
+      const body = rows.map(row => {
+        const cells = row.values.map(v => `<td class="qty-cell">${v.toLocaleString()}</td>`).join('');
+        return `<tr><td>${fmtD(row.date)}</td>${cells}<td class="qty-cell total-col">${row.total.toLocaleString()}</td></tr>`;
+      }).join('');
+      const totals = colTotals.map(v => `<td>${v.toLocaleString()}</td>`).join('');
+      wrap.innerHTML = `<table class="analysis-tbl"><thead><tr><th>Date</th>${headers}<th class="total-col">TOTAL</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>TOTAL</td>${totals}<td class="total-col">${grand.toLocaleString()}</td></tr></tfoot></table>`;
     }
 
     function renderPivotDash() {
@@ -2609,7 +2968,8 @@
       if (pieChartInst) { try { pieChartInst.destroy(); } catch (e) { } }
       if (!entries.length) { document.getElementById('pieChart').innerHTML = ''; return; }
       document.getElementById('pieChartMeta').textContent = `${entries.length} SKUs`;
-      pieChartInst = new ApexCharts(document.getElementById('pieChart'), { chart: { type: 'donut', height: 265, background: 'transparent', animations: { speed: 500 } }, series: entries.map(([, v]) => v), labels: entries.map(([p]) => p.length > 32 ? p.slice(0, 30) + '…' : p), colors: ['#c9942a', '#f0b840', '#2563eb', '#3b82f6', '#10b981', '#7c5cfc', '#f59e0b'], legend: { position: 'bottom', labels: { colors: '#9aa3bf' }, fontFamily: 'Mulish,sans-serif', fontSize: '11px' }, plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', color: '#9aa3bf', fontFamily: 'JetBrains Mono,monospace', formatter: w => w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString() } } } } }, stroke: { colors: ['#141720'] }, dataLabels: { enabled: true, style: { fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' }, dropShadow: { enabled: false } }, tooltip: { theme: 'dark', style: { fontFamily: 'JetBrains Mono,monospace' } }, theme: { mode: 'dark' } });
+      const ct = chartTheme();
+      pieChartInst = new ApexCharts(document.getElementById('pieChart'), { chart: { type: 'donut', height: 265, background: 'transparent', animations: { speed: 500 } }, series: entries.map(([, v]) => v), labels: entries.map(([p]) => p.length > 32 ? p.slice(0, 30) + '…' : p), colors: ['#c9942a', '#f0b840', '#2563eb', '#3b82f6', '#10b981', '#7c5cfc', '#f59e0b'], legend: { position: 'bottom', labels: { colors: ct.text }, fontFamily: 'Mulish,sans-serif', fontSize: '11px' }, plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', color: ct.text, fontFamily: 'JetBrains Mono,monospace', formatter: w => w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString() } } } } }, stroke: { colors: [ct.surface] }, dataLabels: { enabled: true, style: { fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' }, dropShadow: { enabled: false } }, tooltip: { theme: ct.mode, style: { fontFamily: 'JetBrains Mono,monospace' } }, theme: { mode: ct.mode } });
       pieChartInst.render();
     }
 
@@ -2619,7 +2979,8 @@
       const prods = [...new Set(myRec.map(r => r.product))];
       const lkp = {}; myRec.forEach(r => { if (!lkp[r.product]) lkp[r.product] = {}; lkp[r.product][r.date] = (lkp[r.product][r.date] || 0) + r.saleQty; });
       const series = prods.map(p => { let c = 0; return { name: p.length > 35 ? p.slice(0, 33) + '…' : p, data: dates.map(d => { c += (lkp[p]?.[d] || 0); return c; }) }; });
-      growthChartInst = new ApexCharts(document.getElementById('growthChart'), { chart: { type: 'area', height: 265, background: 'transparent', toolbar: { show: false }, animations: { speed: 500 } }, series, xaxis: { categories: dates.map(fmtD), labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } }, yaxis: { labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } }, colors: ['#c9942a', '#f0b840', '#2563eb', '#3b82f6', '#10b981', '#7c5cfc'], fill: { type: 'gradient', gradient: { shadeIntensity: .1, opacityFrom: .35, opacityTo: .04 } }, stroke: { curve: 'smooth', width: 2 }, legend: { labels: { colors: '#9aa3bf' }, fontFamily: 'Mulish,sans-serif', fontSize: '11px' }, tooltip: { theme: 'dark', style: { fontFamily: 'JetBrains Mono,monospace' } }, grid: { borderColor: '#2a2f45', strokeDashArray: 3 }, theme: { mode: 'dark' } });
+      const ct = chartTheme();
+      growthChartInst = new ApexCharts(document.getElementById('growthChart'), { chart: { type: 'area', height: 265, background: 'transparent', toolbar: { show: false }, animations: { speed: 500 } }, series, xaxis: { categories: dates.map(fmtD), labels: { style: { colors: ct.muted, fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } }, yaxis: { labels: { style: { colors: ct.muted, fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } }, colors: ['#c9942a', '#f0b840', '#2563eb', '#3b82f6', '#10b981', '#7c5cfc'], fill: { type: 'gradient', gradient: { shadeIntensity: .1, opacityFrom: .35, opacityTo: .04 } }, stroke: { curve: 'smooth', width: 2 }, legend: { labels: { colors: ct.text }, fontFamily: 'Mulish,sans-serif', fontSize: '11px' }, tooltip: { theme: ct.mode, style: { fontFamily: 'JetBrains Mono,monospace' } }, grid: { borderColor: ct.border, strokeDashArray: 3 }, theme: { mode: ct.mode } });
       growthChartInst.render();
     }
 
@@ -2709,19 +3070,20 @@
 
       // Single bar per product (monthly total)
       const series = [{ name: 'Total Qty', data: totals }];
+      const ct = chartTheme();
       cmpChartInst = new ApexCharts(document.getElementById('cmpChart'), {
         chart: { type: 'bar', height: 290, background: 'transparent', toolbar: { show: false }, animations: { speed: 400 } },
         series,
-        xaxis: { categories: selected.map(p => p.length > 28 ? p.slice(0, 26) + '…' : p), labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' }, rotate: -15 } },
-        yaxis: { labels: { style: { colors: '#5a6380', fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } },
+        xaxis: { categories: selected.map(p => p.length > 28 ? p.slice(0, 26) + '…' : p), labels: { style: { colors: ct.muted, fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' }, rotate: -15 } },
+        yaxis: { labels: { style: { colors: ct.muted, fontFamily: 'JetBrains Mono,monospace', fontSize: '10px' } } },
         colors: CMP_COLORS.slice(0, selected.length),
         plotOptions: { bar: { distributed: true, columnWidth: '55%', borderRadius: 4 } },
         dataLabels: { enabled: true, style: { fontFamily: 'JetBrains Mono,monospace', fontSize: '11px' }, formatter: v => v.toLocaleString() },
         legend: { show: false },
-        tooltip: { theme: 'dark', style: { fontFamily: 'JetBrains Mono,monospace' } },
-        grid: { borderColor: '#2a2f45', strokeDashArray: 3 },
-        theme: { mode: 'dark' },
-        title: { text: `Monthly Totals — ${monthLabel}`, style: { color: '#9aa3bf', fontFamily: 'Syne,sans-serif', fontSize: '11px' } }
+        tooltip: { theme: ct.mode, style: { fontFamily: 'JetBrains Mono,monospace' } },
+        grid: { borderColor: ct.border, strokeDashArray: 3 },
+        theme: { mode: ct.mode },
+        title: { text: `Monthly Totals — ${monthLabel}`, style: { color: ct.text, fontFamily: 'Syne,sans-serif', fontSize: '11px' } }
       });
       cmpChartInst.render();
 
@@ -2741,6 +3103,32 @@
     function clearCompare() { document.getElementById('cmpSlotsRow').innerHTML = ''; acSlotCounter = 0; document.getElementById('compareBody').classList.remove('vis'); if (cmpChartInst) { try { cmpChartInst.destroy(); } catch (e) { } cmpChartInst = null; } addCmpSlot(); addCmpSlot(); }
 
     // ─── EXPORTS ───────────────────────────────────────
+    function exportCompetitiveExcel() {
+      const rec = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
+      const { rows, colTotals, grand } = getCompetitiveAnalysisData(rec);
+      if (!rows.length) { toast('No data', 'err'); return; }
+      const period = dashMonthFilter ? fmtMonthKey(dashMonthFilter) : 'All Months';
+      const headerCells = ['Date', ...COMPETITIVE_PRODUCT_COLUMNS.map(c => c.label), 'TOTAL'].map(h => `<th>${escapeHtml(h)}</th>`).join('');
+      const dataRows = rows.map(row => {
+        const cells = row.values.map(v => `<td class="num">${v}</td>`).join('');
+        return `<tr><td>${escapeHtml(fmtD(row.date))}</td>${cells}<td class="num total">${row.total}</td></tr>`;
+      }).join('');
+      const totalCells = colTotals.map(v => `<td class="num">${v}</td>`).join('');
+      const html = `<!doctype html><html><head><meta charset="utf-8"><style>
+        body{font-family:Arial,sans-serif;}
+        table{border-collapse:collapse;}
+        th,td{border:1px solid #7f8da3;padding:8px;text-align:center;}
+        th{background:#1f2937;color:#ffffff;font-weight:bold;}
+        td:first-child,th:first-child{text-align:left;font-weight:bold;}
+        .num{mso-number-format:"0";text-align:right;}
+        .total{font-weight:bold;background:#eaf2ff;}
+        tfoot td{font-weight:bold;background:#fff7e6;}
+      </style></head><body><h3>Competitive &amp; Our Product Analyse - ${escapeHtml(period)}</h3><table><thead><tr>${headerCells}</tr></thead><tbody>${dataRows}</tbody><tfoot><tr><td>TOTAL</td>${totalCells}<td class="num total">${grand}</td></tr></tfoot></table></body></html>`;
+      const filePeriod = dashMonthFilter || 'all_months';
+      dl(new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' }), 'competitive_product_analyse_' + filePeriod + '_' + today() + '.xls');
+      toast('Excel exported!', 'ok');
+    }
+
     function exportDashCSV() {
       const base = dashMonthFilter ? dashRec.filter(r => getMonthKey(r.date) === dashMonthFilter) : dashRec;
       const rec = dashDateFilter ? base.filter(r => r.date === dashDateFilter) : base;
@@ -2771,6 +3159,7 @@
     }
 
     // ─── UTILS ─────────────────────────────────────────
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
     function dl(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); }
     function prog(pct, msg = '') { const w = document.getElementById('pw'), f = document.getElementById('pf'), l = document.getElementById('pl'); if (pct <= 0) { w.style.display = 'none'; return; } w.style.display = 'block'; f.style.width = pct + '%'; l.textContent = msg; }
     function toast(msg, type = 'ok') { const el = document.getElementById('toast'); document.getElementById('tMsg').textContent = msg; document.getElementById('tIcon').textContent = type === 'err' ? '✕' : type === 'warn' ? '⚠' : '✓'; el.className = 'toast ' + type; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3800); }
@@ -2779,6 +3168,7 @@
 
     // ─── INIT ──────────────────────────────────────────
     window.addEventListener('load', () => {
+      applyTheme(currentTheme());
       addCmpSlot(); addCmpSlot();
       if (window.fbReady) { loadDashboardFromFirebase(); populateDelDates(); }
     });
